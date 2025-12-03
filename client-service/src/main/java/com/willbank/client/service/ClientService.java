@@ -1,5 +1,8 @@
 package com.willbank.client.service;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
+import com.google.firebase.auth.UserRecord;
 import com.willbank.client.dto.ClientDTO;
 import com.willbank.client.entity.Client;
 import com.willbank.client.exception.ClientAlreadyExistsException;
@@ -113,5 +116,9 @@ public class ClientService {
         client.setAddress(dto.getAddress());
         client.setCin(dto.getCin());
         return client;
+    }
+
+    public UserRecord getUserByUid(String uid) throws FirebaseAuthException {
+        return FirebaseAuth.getInstance().getUser(uid);
     }
 }
