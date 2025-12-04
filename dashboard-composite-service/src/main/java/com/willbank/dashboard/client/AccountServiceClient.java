@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(name = "account-service", url = "lb://account-service")
+@FeignClient(name = "account-service")
 public interface AccountServiceClient {
     
     @GetMapping("/api/accounts/client/{clientId}")

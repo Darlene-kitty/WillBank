@@ -1,0 +1,251 @@
+<div class="dashboard-page">
+  <app-sidebar></app-sidebar>
+  
+  <div class="dashboard-main">
+    <div class="dashboard-header">
+    <div class="header-left">
+      <h1>WillBank</h1>
+      <p class="greeting">Bonjour, {{ dashboard?.client?.firstName || 'Client' }} 👋</p>
+    </div>
+    <div class="header-right">
+      <button class="icon-btn notification-btn" (click)="toggleNotificationPanel()">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        @if (unreadNotificationCount > 0) {
+          <span class="badge">{{ unreadNotificationCount }}</span>
+        }
+      </button>
+      <div class="user-avatar">{{ dashboard?.client?.firstName?.charAt(0) || 'U' }}{{ dashboard?.client?.lastName?.charAt(0) || 'S' }}</div>
+    </div>
+  </div>
+
+  @if (showNotificationPanel) {
+    <app-notification-panel (close)="closeNotificationPanel()"></app-notification-panel>
+  }
+
+  @if (loading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Chargement du tableau de bord...</p>
+    </div>
+  }
+
+  @if (error && !loading) {
+    <div class="alert alert-error">{{ error }}</div>
+  }
+
+  @if (!loading && dashboard) {
+    <div class="dashboard-content">
+      <!-- Stats Cards Grid -->
+      <div class="stats-grid">
+        <!-- Solde Total Card -->
+        <div class="stat-card primary-card">
+          <div class="card-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
+          <div class="trend-icon up">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+              <polyline points="17 6 23 6 23 12"/>
+            </svg>
+          </div>
+          <p class="card-label">Solde Total</p>
+          <h2 class="card-value">{{ dashboard.totalBalance | number:'1.2-2' }} MAD</h2>
+          <p class="card-trend">+{{ monthlyGrowth }}% ce mois</p>
+        </div>
+
+        <!-- Revenus Card -->
+        <div class="stat-card white-card">
+          <div class="card-icon-small green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="19" x2="12" y2="5"/>
+              <polyline points="5 12 12 5 19 12"/>
+            </svg>
+          </div>
+          <div class="trend-badge green">+100%</div>
+          <p class="card-label">Revenus ce mois</p>
+          <h3 class="card-value-medium">+{{ totalIncome | number:'1.2-2' }} MAD</h3>
+        </div>
+
+        <!-- Dépenses Card -->
+        <div class="stat-card white-card">
+          <div class="card-icon-small red">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <polyline points="19 12 12 19 5 12"/>
+            </svg>
+          </div>
+          <div class="trend-badge red">-5.2%</div>
+          <p class="card-label">Dépenses ce mois</p>
+          <h3 class="card-value-medium">-{{ totalExpenses | number:'1.2-2' }} MAD</h3>
+        </div>
+
+        <!-- Taux d'épargne Card -->
+        <div class="stat-card purple-card">
+          <div class="card-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <p class="card-label">Taux d'épargne</p>
+          <h2 class="card-value">{{ getSavingsRate() }}%</h2>
+        </div>
+      </div>
+
+      <!-- Évolution du Solde -->
+      <div class="chart-section">
+        <div class="section-header">
+          <div>
+            <h3>Évolution du Solde</h3>
+            <p class="section-subtitle">Suivi mensuel de votre patrimoine</p>
+          </div>
+          <div class="trend-indicator positive">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            </svg>
+            +30.7%
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas baseChart
+            [data]="lineChartData"
+            [options]="lineChartOptions"
+            [type]="lineChartType">
+          </canvas>
+        </div>
+      </div>
+
+      <!-- Mes Comptes Section -->
+      <div class="accounts-section">
+        <div class="section-header">
+          <h3>Mes Comptes</h3>
+          <a [routerLink]="['/accounts']" class="link-btn">
+            Voir tout
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+        </div>
+        <div class="accounts-list">
+          @for (account of dashboard.accounts; track account.id) {
+            <div class="account-card-modern">
+              <div class="account-card-left">
+                <div class="account-icon-modern">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                </div>
+                <div>
+                  <h4>{{ getAccountTypeLabel(account.accountType) }}</h4>
+                  <p class="account-type-label">Type: {{ account.accountType === 'SAVINGS' ? 'épargne' : 'courant' }}</p>
+                </div>
+              </div>
+              <div class="account-card-right">
+                <h3 class="account-balance-modern">{{ account.balance | number:'1.2-2' }} MAD</h3>
+                <span class="status-badge" [ngClass]="account.status?.toLowerCase()">
+                  <span class="status-dot"></span>
+                  {{ account.status === 'ACTIVE' ? 'Actif' : account.status }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+        <button class="btn-transfer">
+          Effectuer un virement
+        </button>
+      </div>
+
+      <!-- Dernières Transactions -->
+      <div class="transactions-section">
+        <div class="section-header">
+          <div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <h3>Dernières Transactions</h3>
+          </div>
+          <a [routerLink]="['/transactions']" class="link-btn">
+            Voir tout
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+        </div>
+        <div class="transactions-list-modern">
+          @for (transaction of dashboard.recentTransactions.slice(0, 5); track transaction.id) {
+            <div class="transaction-item-modern">
+              <div class="transaction-left">
+                <div class="transaction-icon-modern" [ngClass]="getTransactionClass(transaction.type)">
+                  @if (transaction.type === 'DEPOSIT') {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <line x1="12" y1="19" x2="12" y2="5"/>
+                      <polyline points="5 12 12 5 19 12"/>
+                    </svg>
+                  } @else if (transaction.type === 'WITHDRAWAL') {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <line x1="12" y1="5" x2="12" y2="19"/>
+                      <polyline points="19 12 12 19 5 12"/>
+                    </svg>
+                  } @else {
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <line x1="5" y1="12" x2="19" y2="12"/>
+                      <polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  }
+                </div>
+                <div>
+                  <h4>{{ getTransactionLabel(transaction.type) }}</h4>
+                  <p class="transaction-date">{{ transaction.createdAt | date:'d MMMM':'':'fr' }}</p>
+                </div>
+              </div>
+              <div class="transaction-amount-modern" [ngClass]="getTransactionClass(transaction.type)">
+                {{ transaction.type === 'DEPOSIT' ? '+' : '-' }}{{ transaction.amount | number:'1.2-2' }} MAD
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Répartition -->
+      <div class="distribution-section">
+        <div class="section-header">
+          <div>
+            <h3>Répartition</h3>
+            <p class="section-subtitle">Par type de transaction</p>
+          </div>
+        </div>
+        <div class="chart-container-small">
+          <canvas baseChart
+            [data]="doughnutChartData"
+            [options]="doughnutChartOptions"
+            [type]="doughnutChartType">
+          </canvas>
+        </div>
+        <div class="distribution-legend">
+          @for (item of getDistributionData(); track item.label) {
+            <div class="legend-item">
+              <div class="legend-color" [style.background-color]="item.color"></div>
+              <span class="legend-label">{{ item.label }}</span>
+              <span class="legend-value">{{ item.value }} MAD</span>
+            </div>
+          }
+        </div>
+        <div class="total-transactions">
+          <span>Total transactions</span>
+          <strong>{{ dashboard.recentTransactions.length }}</strong>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+

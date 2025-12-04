@@ -32,6 +32,9 @@ public class Transaction {
     @Column
     private Long destinationAccountId;
     
+    @Column(length = 34)
+    private String destinationIban;
+    
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
     
