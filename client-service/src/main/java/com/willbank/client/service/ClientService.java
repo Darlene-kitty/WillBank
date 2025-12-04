@@ -1,8 +1,5 @@
 package com.willbank.client.service;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseAuthException;
-import com.google.firebase.auth.UserRecord;
 import com.willbank.client.dto.ClientDTO;
 import com.willbank.client.entity.Client;
 import com.willbank.client.exception.ClientAlreadyExistsException;
@@ -10,6 +7,7 @@ import com.willbank.client.exception.ClientNotFoundException;
 import com.willbank.client.repository.ClientRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +20,7 @@ import java.util.stream.Collectors;
 public class ClientService {
     
     private final ClientRepository clientRepository;
+    private final PasswordEncoder passwordEncoder;
     
     @Transactional
     public ClientDTO createClient(ClientDTO clientDTO) {
@@ -46,6 +45,13 @@ public class ClientService {
         log.info("Fetching client with ID: {}", id);
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ClientNotFoundException("Client not found with ID: " + id));
+        return toDTO(client);
+    }
+    
+    public ClientDTO getClientByEmail(String email) {
+        log.info("Fetching client with email: {}", email);
+        Client client = clientRepository.findByEmail(email)
+                .orElseThrow(() -> new ClientNotFoundException("Client not found with email: " + email));
         return toDTO(client);
     }
     
@@ -75,6 +81,14 @@ public class ClientService {
         client.setAddress(clientDTO.getAddress());
         client.setCin(clientDTO.getCin());
         
+        if (clientDTO.getRole() != null) {
+            client.setRole(clientDTO.getRole());
+        }
+        
+        if (clientDTO.getStatus() != null) {
+            client.setStatus(clientDTO.getStatus());
+        }
+        
         Client updatedClient = clientRepository.save(client);
         log.info("Client updated successfully with ID: {}", updatedClient.getId());
         
@@ -102,6 +116,9 @@ public class ClientService {
         dto.setPhone(client.getPhone());
         dto.setAddress(client.getAddress());
         dto.setCin(client.getCin());
+        dto.setRole(client.getRole());
+        dto.setStatus(client.getStatus());
+        dto.setLastLogin(client.getLastLogin());
         dto.setCreatedAt(client.getCreatedAt());
         dto.setUpdatedAt(client.getUpdatedAt());
         return dto;
@@ -112,13 +129,13 @@ public class ClientService {
         client.setFirstName(dto.getFirstName());
         client.setLastName(dto.getLastName());
         client.setEmail(dto.getEmail());
+        // Default password for admin-created clients
+        client.setPassword(passwordEncoder.encode("DefaultPassword123!"));
         client.setPhone(dto.getPhone());
         client.setAddress(dto.getAddress());
         client.setCin(dto.getCin());
+        client.setRole(dto.getRole() != null ? dto.getRole() : Client.ClientRole.CLIENT);
+        client.setStatus(dto.getStatus() != null ? dto.getStatus() : Client.ClientStatus.ACTIVE);
         return client;
-    }
-
-    public UserRecord getUserByUid(String uid) throws FirebaseAuthException {
-        return FirebaseAuth.getInstance().getUser(uid);
     }
 }
