@@ -1,0 +1,32 @@
+<div class="not-found-container">
+  <div class="not-found-content">
+    <div class="error-code">404</div>
+    <h1>Page non trouvée</h1>
+    <p>Désolé, la page que vous recherchez n'existe pas ou a été déplacée.</p>
+    
+    <div class="not-found-actions">
+      <button class="btn btn-primary" (click)="goHome()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Retour à l'accueil
+      </button>
+      <button class="btn btn-outline" (click)="goBack()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="19" y1="12" x2="5" y2="12"/>
+          <polyline points="12 19 5 12 12 5"/>
+        </svg>
+        Page précédente
+      </button>
+    </div>
+
+    <div class="not-found-illustration">
+      <svg width="300" height="300" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" stroke-width="0.5"/>
+        <line x1="12" y1="8" x2="12" y2="12" stroke-width="0.5"/>
+        <line x1="12" y1="16" x2="12.01" y2="16" stroke-width="0.5"/>
+      </svg>
+    </div>
+  </div>
+</div>

@@ -25,6 +25,8 @@ public class TransactionDTO {
     
     private Long destinationAccountId;
     
+    private String destinationIban;
+    
     @NotNull(message = "Amount is required")
     @Positive(message = "Amount must be positive")
     private BigDecimal amount;

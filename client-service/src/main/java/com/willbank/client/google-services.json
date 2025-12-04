@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "136172713260",
+    "project_id": "willbank-isi4fr-gp8",
+    "storage_bucket": "willbank-isi4fr-gp8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:136172713260:android:f06547d44738b2e2582889",
+        "android_client_info": {
+          "package_name": "com.sji.willbank8"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAWQLDtoTipoBJs8IObAZb9SCqnruJaR1c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
