@@ -17,4 +17,6 @@ public class LoginRequest {
     
     @NotBlank(message = "Password is required")
     private String password;
+    
+    private String fcmToken; // Optional: Firebase Cloud Messaging token for push notifications
 }

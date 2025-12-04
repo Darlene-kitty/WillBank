@@ -42,6 +42,9 @@ public class Client {
     @Column(nullable = false, unique = true)
     private String cin;
     
+    @Column(name = "fcm_token")
+    private String fcmToken;
+    
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ClientRole role = ClientRole.CLIENT;

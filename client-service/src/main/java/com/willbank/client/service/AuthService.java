@@ -30,6 +30,8 @@ public class AuthService {
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final UserDetailsService userDetailsService;
+    private final EmailService emailService;
+    private final PushNotificationService pushNotificationService;
     
     @Transactional
     public LoginResponse login(LoginRequest request) {
@@ -48,9 +50,33 @@ public class AuthService {
             Client client = clientRepository.findByEmail(request.getEmail())
                     .orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
             
+            // Check if this is the first login
+            boolean isFirstLogin = (client.getLastLogin() == null);
+            
+            // Update FCM token if provided
+            if (request.getFcmToken() != null && !request.getFcmToken().isBlank()) {
+                client.setFcmToken(request.getFcmToken());
+            }
+            
             // Update last login
             client.setLastLogin(LocalDateTime.now());
             clientRepository.save(client);
+            
+            // Send first login notifications if applicable
+            if (isFirstLogin) {
+                log.info("First login detected for email: {}", request.getEmail());
+                emailService.sendFirstLoginEmail(
+                        client.getEmail(),
+                        client.getFirstName(),
+                        client.getLastLogin()
+                );
+                if (client.getFcmToken() != null && !client.getFcmToken().isBlank()) {
+                    pushNotificationService.sendFirstLoginPushNotification(
+                            client.getFcmToken(),
+                            client.getFirstName()
+                    );
+                }
+            }
             
             String accessToken = jwtUtil.generateToken(userDetails);
             String refreshToken = jwtUtil.generateRefreshToken(userDetails);
@@ -95,8 +121,26 @@ public class AuthService {
         client.setStatus(Client.ClientStatus.ACTIVE);
         client.setLastLogin(LocalDateTime.now());
         
+        // Set FCM token if provided
+        if (request.getFcmToken() != null && !request.getFcmToken().isBlank()) {
+            client.setFcmToken(request.getFcmToken());
+        }
+        
         Client savedClient = clientRepository.save(client);
         log.info("Client registered successfully with ID: {}", savedClient.getId());
+        
+        // Send welcome notifications
+        emailService.sendWelcomeEmail(
+                savedClient.getEmail(),
+                savedClient.getFirstName(),
+                savedClient.getLastName()
+        );
+        if (savedClient.getFcmToken() != null && !savedClient.getFcmToken().isBlank()) {
+            pushNotificationService.sendWelcomePushNotification(
+                    savedClient.getFcmToken(),
+                    savedClient.getFirstName()
+            );
+        }
         
         UserDetails userDetails = userDetailsService.loadUserByUsername(savedClient.getEmail());
         String accessToken = jwtUtil.generateToken(userDetails);
@@ -159,6 +203,19 @@ public class AuthService {
         clientRepository.save(client);
         
         log.info("Password changed successfully for email: {}", email);
+        
+        // Send password changed notifications
+        emailService.sendPasswordChangedEmail(
+                client.getEmail(),
+                client.getFirstName(),
+                LocalDateTime.now()
+        );
+        if (client.getFcmToken() != null && !client.getFcmToken().isBlank()) {
+            pushNotificationService.sendPasswordChangedPushNotification(
+                    client.getFcmToken(),
+                    client.getFirstName()
+            );
+        }
     }
     
     private ClientDTO convertToDTO(Client client) {

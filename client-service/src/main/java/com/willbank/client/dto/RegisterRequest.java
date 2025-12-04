@@ -41,4 +41,6 @@ public class RegisterRequest {
     @NotBlank(message = "CIN is required")
     @Pattern(regexp = "^[A-Z0-9]{8,20}$", message = "CIN should be valid")
     private String cin;
+    
+    private String fcmToken; // Optional: Firebase Cloud Messaging token for push notifications
 }
