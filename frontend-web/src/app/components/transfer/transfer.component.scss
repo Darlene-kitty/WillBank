@@ -1,0 +1,499 @@
+.transfer-page {
+  display: flex;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.transfer-content {
+  flex: 1;
+  padding: 2rem;
+  margin-left: 280px;
+  max-width: 1200px;
+}
+
+.page-header {
+  margin-bottom: 2rem;
+  color: white;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+}
+
+// Stepper
+.stepper-container {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 1;
+
+  .step-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.25rem;
+    transition: all 0.3s ease;
+
+    svg {
+      stroke-width: 3;
+    }
+  }
+
+  .step-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    transition: color 0.3s ease;
+  }
+
+  &.active {
+    .step-circle {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .step-label {
+      color: #1e293b;
+      font-weight: 600;
+    }
+  }
+
+  &.completed {
+    .step-circle {
+      background: #667eea;
+      color: white;
+    }
+  }
+}
+
+.step-line {
+  flex: 1;
+  height: 3px;
+  background: #e2e8f0;
+  margin: 0 1rem;
+  margin-bottom: 2rem;
+  transition: background 0.3s ease;
+
+  &.active {
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  }
+}
+
+// Transfer Card
+.transfer-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+// Transfer Type Selector
+.transfer-type-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.transfer-type-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  svg {
+    width: 32px;
+    height: 32px;
+    stroke: #94a3b8;
+    transition: stroke 0.3s ease;
+  }
+
+  .transfer-type-content {
+    text-align: left;
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 0.25rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+
+  &:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+  }
+
+  &.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+
+    svg {
+      stroke: #667eea;
+    }
+  }
+}
+
+// Form
+.transfer-form {
+  .form-group {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 0.5rem;
+
+      .required {
+        color: #ef4444;
+      }
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      &::placeholder {
+        color: #cbd5e1;
+      }
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 80px;
+    }
+  }
+}
+
+.input-with-suffix {
+  position: relative;
+
+  .form-control {
+    padding-right: 3rem;
+  }
+
+  .input-suffix {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 600;
+    color: #64748b;
+  }
+}
+
+// Info Box
+.info-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.5rem;
+  margin-top: 1.5rem;
+
+  svg {
+    flex-shrink: 0;
+    stroke: #3b82f6;
+    margin-top: 0.125rem;
+  }
+
+  strong {
+    display: block;
+    color: #1e40af;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    color: #1e40af;
+    font-size: 0.875rem;
+    margin: 0;
+  }
+}
+
+// Alerts
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+
+  svg {
+    flex-shrink: 0;
+    margin-top: 0.125rem;
+  }
+
+  &.alert-warning {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    color: #92400e;
+
+    svg {
+      stroke: #f59e0b;
+    }
+  }
+
+  &.alert-error {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+
+    svg {
+      stroke: #ef4444;
+    }
+  }
+}
+
+// Confirmation Details
+.confirmation-details {
+  margin: 2rem 0;
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f1f5f9;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: #1e293b;
+      text-align: right;
+
+      &.amount {
+        font-size: 1.125rem;
+        color: #667eea;
+      }
+    }
+  }
+}
+
+.total-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 0.75rem;
+  margin-top: 1.5rem;
+
+  .total-label {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .total-amount {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+  }
+}
+
+// Actions
+.transfer-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+// Buttons
+.btn {
+  padding: 0.875rem 2rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.btn-outline {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #475569;
+
+    &:hover:not(:disabled) {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+    }
+  }
+
+  &.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+    }
+  }
+}
+
+// Success Card
+.success-card {
+  text-align: center;
+
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    svg {
+      stroke: white;
+      stroke-width: 2;
+    }
+  }
+
+  .success-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+  }
+
+  .success-message {
+    color: #64748b;
+    margin-bottom: 2rem;
+  }
+
+  .confirmation-details {
+    text-align: left;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  .transfer-actions {
+    flex-direction: row;
+
+    .btn {
+      flex: 1;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .transfer-content {
+    margin-left: 0;
+    padding: 1rem;
+  }
+
+  .stepper {
+    .step-label {
+      font-size: 0.75rem;
+    }
+
+    .step-circle {
+      width: 48px;
+      height: 48px;
+      font-size: 1rem;
+    }
+  }
+
+  .transfer-type-selector {
+    grid-template-columns: 1fr;
+  }
+
+  .transfer-actions {
+    flex-direction: column;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}
