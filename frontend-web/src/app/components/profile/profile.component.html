@@ -1,0 +1,252 @@
+<div class="profile-page">
+  <app-sidebar></app-sidebar>
+
+  <div class="profile-content">
+    <div class="page-header">
+      <div>
+        <h1>Mon Profil</h1>
+        <p>Gérez vos informations personnelles</p>
+      </div>
+      @if (!editMode) {
+        <button class="btn-edit-profile" (click)="toggleEditMode()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          Modifier
+        </button>
+      }
+    </div>
+
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    <div class="profile-container">
+      <!-- Carte Profil Principal -->
+      <div class="profile-main-card">
+        <div class="profile-banner">
+          <div class="profile-avatar-large">
+            {{ user?.firstName?.charAt(0) }}{{ user?.lastName?.charAt(0) }}
+          </div>
+          <div class="profile-banner-info">
+            <h2>{{ user?.firstName }} {{ user?.lastName }}</h2>
+            <p class="member-since">Client depuis {{ user?.memberSince }}</p>
+            <span class="badge-status">{{ user?.accountStatus }}</span>
+          </div>
+        </div>
+
+        @if (!editMode) {
+          <div class="profile-info-section">
+            <h3>Informations Personnelles</h3>
+            <div class="info-grid">
+              <div class="info-item">
+                <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <div>
+                  <label>Prénom</label>
+                  <p>{{ user?.firstName }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <div>
+                  <label>Nom</label>
+                  <p>{{ user?.lastName }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                <div>
+                  <label>Email</label>
+                  <p>{{ user?.email }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                <div>
+                  <label>Téléphone</label>
+                  <p>{{ user?.phone }}</p>
+                </div>
+              </div>
+
+              <div class="info-item full-width">
+                <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <div>
+                  <label>Adresse</label>
+                  <p>{{ user?.address }}</p>
+                </div>
+              </div>
+
+              <div class="info-item">
+                <svg class="info-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <div>
+                  <label>Date de naissance</label>
+                  <p>{{ user?.birthDate }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (editMode) {
+          <form (ngSubmit)="saveProfile()" class="profile-edit-form">
+            <h3>Modifier les informations</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="firstName">Prénom</label>
+                <input type="text" id="firstName" name="firstName" [(ngModel)]="editedUser.firstName" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label for="lastName">Nom</label>
+                <input type="text" id="lastName" name="lastName" [(ngModel)]="editedUser.lastName" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" [(ngModel)]="editedUser.email" class="form-control" required />
+              </div>
+
+              <div class="form-group">
+                <label for="phone">Téléphone</label>
+                <input type="tel" id="phone" name="phone" [(ngModel)]="editedUser.phone" class="form-control" />
+              </div>
+
+              <div class="form-group full-width">
+                <label for="address">Adresse</label>
+                <input type="text" id="address" name="address" [(ngModel)]="editedUser.address" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label for="birthDate">Date de naissance</label>
+                <input type="text" id="birthDate" name="birthDate" [(ngModel)]="editedUser.birthDate" class="form-control" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" (click)="toggleEditMode()" [disabled]="loading">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="loading">
+                @if (loading) {
+                  Enregistrement...
+                } @else {
+                  Enregistrer
+                }
+              </button>
+            </div>
+          </form>
+        }
+      </div>
+
+      <!-- Colonne de droite -->
+      <div class="profile-sidebar">
+        <!-- Carte Sécurité -->
+        <div class="security-card">
+          <div class="card-header">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <h3>Sécurité</h3>
+          </div>
+
+          <div class="security-item">
+            <div class="security-item-header">
+              <h4>Mot de passe</h4>
+              <button type="button" class="btn-text" (click)="changePassword()">Modifier</button>
+            </div>
+            <p class="security-item-desc">Dernière modification: {{ passwordLastChanged }}</p>
+          </div>
+
+          <div class="security-item">
+            <div class="security-item-header">
+              <h4>Authentification à deux facteurs</h4>
+              <button type="button" class="btn-primary-small" (click)="enable2FA()">Activer</button>
+            </div>
+            <p class="security-item-desc">Sécurisez davantage votre compte</p>
+          </div>
+
+          <div class="security-item">
+            <div class="security-item-header">
+              <h4>Notifications de sécurité</h4>
+              <label class="toggle-switch">
+                <input type="checkbox" [checked]="securityNotifications" (change)="toggleSecurityNotifications()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <p class="security-item-desc">Recevez des alertes pour les activités suspectes</p>
+          </div>
+        </div>
+
+        <!-- Carte Statut KYC -->
+        <div class="kyc-card">
+          <h3>Statut KYC (Know Your Customer)</h3>
+
+          <div class="kyc-item verified">
+            <div class="kyc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="kyc-info">
+              <h4>Identité vérifiée</h4>
+              <p>Votre identité a été validée</p>
+            </div>
+          </div>
+
+          <div class="kyc-item verified">
+            <div class="kyc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="kyc-info">
+              <h4>Adresse vérifiée</h4>
+              <p>Votre adresse a été validée</p>
+            </div>
+          </div>
+
+          <div class="kyc-item info">
+            <div class="kyc-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+            </div>
+            <div class="kyc-info">
+              <h4>Compte validé niveau {{ kycStatus.accountLevel }}</h4>
+              <p>Toutes les fonctionnalités sont disponibles</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

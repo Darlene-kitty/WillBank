@@ -1,0 +1,100 @@
+<div class="filters-container">
+  <div class="filters-header">
+    <button class="btn btn-outline" (click)="toggleFilters()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      </svg>
+      Filtres
+      @if (hasActiveFilters()) {
+        <span class="badge badge-primary">{{ hasActiveFilters() ? '●' : '' }}</span>
+      }
+    </button>
+
+    @if (hasActiveFilters()) {
+      <button class="btn btn-sm btn-outline" (click)="resetFilters()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Réinitialiser
+      </button>
+    }
+  </div>
+
+  @if (showFilters) {
+    <div class="filters-panel">
+      <div class="filters-grid">
+        <div class="form-group">
+          <label class="form-label">Recherche</label>
+          <input
+            type="text"
+            [(ngModel)]="filters.search"
+            class="form-control"
+            placeholder="Rechercher dans les descriptions..."
+            (input)="applyFilters()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Type de transaction</label>
+          <select
+            [(ngModel)]="filters.type"
+            class="form-control"
+            (change)="applyFilters()"
+          >
+            <option value="">Tous les types</option>
+            <option value="DEPOSIT">Dépôt</option>
+            <option value="WITHDRAWAL">Retrait</option>
+            <option value="TRANSFER">Virement</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date de début</label>
+          <input
+            type="date"
+            [(ngModel)]="filters.dateFrom"
+            class="form-control"
+            (change)="applyFilters()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date de fin</label>
+          <input
+            type="date"
+            [(ngModel)]="filters.dateTo"
+            class="form-control"
+            (change)="applyFilters()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Montant minimum (MAD)</label>
+          <input
+            type="number"
+            [(ngModel)]="filters.minAmount"
+            class="form-control"
+            placeholder="0"
+            min="0"
+            step="100"
+            (input)="applyFilters()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Montant maximum (MAD)</label>
+          <input
+            type="number"
+            [(ngModel)]="filters.maxAmount"
+            class="form-control"
+            placeholder="Illimité"
+            min="0"
+            step="100"
+            (input)="applyFilters()"
+          />
+        </div>
+      </div>
+    </div>
+  }
+</div>

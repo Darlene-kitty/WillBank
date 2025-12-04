@@ -1,0 +1,240 @@
+<div class="transactions-page">
+  <app-sidebar></app-sidebar>
+
+  <div class="transactions-content">
+    <div class="page-header">
+      <div class="header-left">
+        <h1>Transactions</h1>
+        <p>Historique de toutes les transactions</p>
+      </div>
+      <button class="btn btn-primary" (click)="openModal()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Nouvelle transaction
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+      <div class="search-input-wrapper">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="search-icon">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Rechercher une transaction..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()">
+      </div>
+      
+      <div class="filter-group">
+        <select class="filter-select" [(ngModel)]="filterType" (change)="onFilterChange()">
+          <option value="ALL">Tous les types</option>
+          <option value="DEPOSIT">Dépôts</option>
+          <option value="WITHDRAWAL">Retraits</option>
+          <option value="TRANSFER">Virements</option>
+        </select>
+        <span class="badge badge-primary">{{ filteredTransactions.length }} transaction(s)</span>
+      </div>
+    </div>
+
+    @if (loading) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Chargement des transactions...</p>
+      </div>
+    }
+
+    @if (error && !loading) {
+      <div class="alert alert-error">{{ error }}</div>
+    }
+
+    @if (!loading && paginatedTransactions.length > 0) {
+      <div class="transactions-table-container">
+        <table class="transactions-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Compte source</th>
+              <th>Compte destination</th>
+              <th>Montant</th>
+              <th>Description</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of paginatedTransactions; track transaction.id) {
+              <tr>
+                <td>{{ transaction.createdAt | date:'short' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getTransactionClass(transaction.type)">
+                    {{ getTransactionTypeLabel(transaction.type) }}
+                  </span>
+                </td>
+                <td>{{ getAccountNumber(transaction.sourceAccountId) }}</td>
+                <td>
+                  {{ transaction.destinationAccountId ? getAccountNumber(transaction.destinationAccountId) : '-' }}
+                </td>
+                <td class="amount" [ngClass]="getTransactionClass(transaction.type)">
+                  {{ transaction.type === 'DEPOSIT' ? '+' : '-' }}{{ transaction.amount | number:'1.2-2' }} MAD
+                </td>
+                <td>{{ transaction.description || '-' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="transaction.status?.toLowerCase()">
+                    {{ transaction.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <app-pagination
+        [currentPage]="currentPage"
+        [totalPages]="totalPages"
+        [totalItems]="filteredTransactions.length"
+        [itemsPerPage]="itemsPerPage"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    }
+
+    @if (!loading && transactions.length === 0) {
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <h3>Aucune transaction</h3>
+        <p>Effectuez votre première transaction</p>
+        <button class="btn btn-primary" (click)="openModal()">Nouvelle transaction</button>
+      </div>
+    }
+
+    <!-- Modal Nouvelle Transaction -->
+    @if (showModal) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal modal-interactive" (click)="$event.stopPropagation()">
+          <div class="modal-icon-header">
+            <div class="modal-icon create">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </div>
+            <button class="modal-close" (click)="closeModal()">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-header">
+            <h2>Nouvelle transaction</h2>
+            <p class="modal-subtitle">Effectuez un dépôt, retrait ou virement</p>
+          </div>
+
+          <form (ngSubmit)="onSubmit()" class="modal-body">
+            @if (error) {
+              <div class="alert alert-error">{{ error }}</div>
+            }
+
+            @if (successMessage) {
+              <div class="alert alert-success">{{ successMessage }}</div>
+            }
+
+            <div class="form-group">
+              <label for="type">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Type de transaction *
+              </label>
+              <select id="type" name="type" [(ngModel)]="newTransaction.type" (change)="onTransactionTypeChange()" class="form-control" required>
+                <option value="DEPOSIT">💰 Dépôt</option>
+                <option value="WITHDRAWAL">💸 Retrait</option>
+                <option value="TRANSFER">🔄 Virement</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="sourceAccountId">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                  <line x1="1" y1="10" x2="23" y2="10"/>
+                </svg>
+                Compte source *
+              </label>
+              <select id="sourceAccountId" name="sourceAccountId" [(ngModel)]="newTransaction.sourceAccountId" class="form-control" required>
+                <option value="0">Sélectionner un compte</option>
+                @for (account of accounts; track account.id) {
+                  <option [value]="account.id">{{ account.accountNumber }} - {{ account.balance | number:'1.2-2' }} MAD</option>
+                }
+              </select>
+            </div>
+
+            @if (newTransaction.type === 'TRANSFER') {
+              <div class="form-group">
+                <label for="destinationAccountId">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                    <line x1="1" y1="10" x2="23" y2="10"/>
+                  </svg>
+                  Compte destination *
+                </label>
+                <select id="destinationAccountId" name="destinationAccountId" [(ngModel)]="newTransaction.destinationAccountId" class="form-control" required>
+                  <option value="0">Sélectionner un compte</option>
+                  @for (account of getAvailableDestinationAccounts(); track account.id) {
+                    <option [value]="account.id">{{ account.accountNumber }} - {{ account.balance | number:'1.2-2' }} MAD</option>
+                  }
+                </select>
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="amount">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <line x1="12" y1="1" x2="12" y2="23"/>
+                  <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                Montant (MAD) *
+              </label>
+              <input type="number" id="amount" name="amount" [(ngModel)]="newTransaction.amount" class="form-control" min="0" step="0.01" placeholder="0.00" required />
+            </div>
+
+            <div class="form-group">
+              <label for="description">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                Description
+              </label>
+              <textarea id="description" name="description" [(ngModel)]="newTransaction.description" class="form-control" rows="3" placeholder="Ex: Salaire du mois"></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" (click)="closeModal()" [disabled]="submitting">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                {{ submitting ? 'Traitement...' : 'Effectuer la transaction' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  </div>
+</div>

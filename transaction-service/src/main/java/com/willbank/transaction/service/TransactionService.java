@@ -60,19 +60,25 @@ public class TransactionService {
                     
                 case TRANSFER:
                     accountClient.debit(transaction.getSourceAccountId(), transaction.getAmount());
-                    accountClient.credit(transaction.getDestinationAccountId(), transaction.getAmount());
                     eventPublisher.publishAccountDebited(new AccountDebitedEvent(
                         transaction.getSourceAccountId(),
                         transaction.getAmount(),
                         transaction.getTransactionReference(),
                         LocalDateTime.now()
                     ));
-                    eventPublisher.publishAccountCredited(new AccountCreditedEvent(
-                        transaction.getDestinationAccountId(),
-                        transaction.getAmount(),
-                        transaction.getTransactionReference(),
-                        LocalDateTime.now()
-                    ));
+                    
+                    // Virement interne (entre comptes WillBank)
+                    if (transaction.getDestinationAccountId() != null) {
+                        accountClient.credit(transaction.getDestinationAccountId(), transaction.getAmount());
+                        eventPublisher.publishAccountCredited(new AccountCreditedEvent(
+                            transaction.getDestinationAccountId(),
+                            transaction.getAmount(),
+                            transaction.getTransactionReference(),
+                            LocalDateTime.now()
+                        ));
+                    }
+                    // Virement externe (vers IBAN externe)
+                    // Le crédit sera traité par un système externe
                     break;
             }
             
@@ -152,6 +158,7 @@ public class TransactionService {
         dto.setType(transaction.getType());
         dto.setSourceAccountId(transaction.getSourceAccountId());
         dto.setDestinationAccountId(transaction.getDestinationAccountId());
+        dto.setDestinationIban(transaction.getDestinationIban());
         dto.setAmount(transaction.getAmount());
         dto.setDescription(transaction.getDescription());
         dto.setStatus(transaction.getStatus());
@@ -164,6 +171,7 @@ public class TransactionService {
         transaction.setType(dto.getType());
         transaction.setSourceAccountId(dto.getSourceAccountId());
         transaction.setDestinationAccountId(dto.getDestinationAccountId());
+        transaction.setDestinationIban(dto.getDestinationIban());
         transaction.setAmount(dto.getAmount());
         transaction.setDescription(dto.getDescription());
         return transaction;
