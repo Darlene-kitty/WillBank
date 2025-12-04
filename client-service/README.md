@@ -48,6 +48,19 @@ Le **Client Service** est le microservice responsable de la gestion des clients 
 - **Validation KYC simplifiée** (nom, prénom, CIN, adresse)
 - **Index optimisés** pour les recherches
 
+### Notifications 📧🔔
+
+- **Email SMTP** pour communication avec les clients
+- **Push notifications Firebase** pour applications mobiles
+- **Emails automatiques** :
+  - Bienvenue lors de l'inscription
+  - Première connexion
+  - Changement de mot de passe
+- **Push notifications automatiques** :
+  - Notification de bienvenue
+  - Alerte première connexion
+  - Confirmation changement de mot de passe
+
 ### Sécurité
 
 - **Hachage BCrypt** des mots de passe
@@ -145,6 +158,7 @@ Pour un guide complet, consultez [QUICKSTART.md](QUICKSTART.md)
 |----------|-------------|
 | [QUICKSTART.md](QUICKSTART.md) | Guide de démarrage en 5 minutes |
 | [AUTHENTICATION_README.md](AUTHENTICATION_README.md) | Documentation complète de l'authentification |
+| [NOTIFICATIONS_SETUP.md](NOTIFICATIONS_SETUP.md) | Configuration des emails et push notifications |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Architecture détaillée du système |
 
 ### Documentation interactive
@@ -169,6 +183,13 @@ Importez la collection pré-configurée : [WillBank_Client_Service.postman_colle
 - **MySQL 8.0** - Base de données
 - **Lombok** - Réduction du code boilerplate
 - **SpringDoc OpenAPI** - Documentation Swagger
+
+### Notifications
+
+- **JavaMailSender** - Envoi d'emails SMTP
+- **Thymeleaf** - Templates HTML pour emails
+- **Firebase Admin SDK** - Push notifications
+- **@Async** - Envoi asynchrone non-bloquant
 
 ### Sécurité
 
@@ -199,13 +220,27 @@ jwt:
 ### Variables d'environnement
 
 ```bash
+# Database
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=client_db
 DB_USER=root
 DB_PASSWORD=root
+
+# JWT
 JWT_SECRET=your-secret-key
+
+# Email
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password
+
+# Firebase
+FIREBASE_CONFIG_FILE=classpath:serviceAccountKey.json
 ```
+
+### Configuration des notifications
+
+Pour configurer les emails et push notifications, consultez [NOTIFICATIONS_SETUP.md](NOTIFICATIONS_SETUP.md)
 
 ## 🔗 Endpoints principaux
 

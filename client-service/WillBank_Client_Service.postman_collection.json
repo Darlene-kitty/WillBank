@@ -51,7 +51,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Dupont\",\n  \"email\": \"jean.dupont@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+33612345678\",\n  \"address\": \"123 Rue de Paris, 75001 Paris\",\n  \"cin\": \"AB123456\"\n}"
+              "raw": "{\n  \"firstName\": \"Jean\",\n  \"lastName\": \"Dupont\",\n  \"email\": \"jean.dupont@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+33612345678\",\n  \"address\": \"123 Rue de Paris, 75001 Paris\",\n  \"cin\": \"AB123456\",\n  \"fcmToken\": \"your-firebase-cloud-messaging-token-here\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
@@ -89,7 +89,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"jean.dupont@example.com\",\n  \"password\": \"Password123!\"\n}"
+              "raw": "{\n  \"email\": \"jean.dupont@example.com\",\n  \"password\": \"Password123!\",\n  \"fcmToken\": \"your-firebase-cloud-messaging-token-here\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/login",

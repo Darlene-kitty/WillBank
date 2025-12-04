@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez WillBank</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #0D47A1;
+        }
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0D47A1;
+            margin-bottom: 10px;
+        }
+        .content {
+            padding: 30px 0;
+        }
+        h1 {
+            color: #0D47A1;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        p {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .highlight {
+            background-color: #E3F2FD;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 12px 30px;
+            background-color: #0D47A1;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 14px;
+            color: #666;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">WillBank</div>
+            <p>Votre partenaire financier de confiance</p>
+        </div>
+        
+        <div class="content">
+            <h1>Bienvenue <span th:text="${firstName}">Client</span> <span th:text="${lastName}"></span> !</h1>
+            
+            <p>Nous sommes ravis de vous accueillir dans la famille WillBank.</p>
+            
+            <p>Votre compte a été créé avec succès ! Vous pouvez maintenant profiter de tous nos services bancaires en ligne.</p>
+            
+            <div class="highlight">
+                <strong>Vos avantages :</strong>
+                <ul>
+                    <li>Gestion de compte en temps réel</li>
+                    <li>Virements instantanés</li>
+                    <li>Notifications en temps réel</li>
+                    <li>Support client 24/7</li>
+                </ul>
+            </div>
+            
+            <p>Pour commencer, connectez-vous à votre espace client avec l'email et le mot de passe que vous avez définis lors de votre inscription.</p>
+            
+            <p><strong>Conseils de sécurité :</strong></p>
+            <ul>
+                <li>Ne partagez jamais votre mot de passe</li>
+                <li>Activez la double authentification</li>
+                <li>Vérifiez régulièrement vos transactions</li>
+            </ul>
+            
+            <p>Si vous avez des questions ou besoin d'assistance, notre équipe est à votre disposition.</p>
+            
+            <p>Cordialement,<br>L'équipe WillBank</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>WillBank</strong></p>
+            <p>Service Client: support@willbank.com | Tél: +33 1 23 45 67 89</p>
+            <p>&copy; 2024 WillBank. Tous droits réservés.</p>
+        </div>
+    </div>
+</body>
+</html>
