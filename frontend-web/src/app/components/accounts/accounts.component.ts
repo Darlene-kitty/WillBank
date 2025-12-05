@@ -219,7 +219,9 @@ export class AccountsComponent implements OnInit {
     this.modalMode = 'create';
     this.currentAccount = {
       clientId: 0,
-      accountType: 'SAVINGS'
+      accountType: 'SAVINGS',
+      balance: 0,
+      status: 'ACTIVE'
     };
     this.showModal = true;
   }

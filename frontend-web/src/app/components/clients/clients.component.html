@@ -211,3 +211,145 @@
         <button class="btn btn-primary" (click)="openCreateModal()">Ajouter un client</button>
       </div>
     }
+
+    <!-- Modal Créer/Modifier Client -->
+    @if (showModal) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>{{ modalMode === 'create' ? 'Nouveau client' : 'Modifier le client' }}</h2>
+            <button class="modal-close" (click)="closeModal()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <form (ngSubmit)="onSubmit()" class="modal-body">
+            @if (error) {
+              <div class="alert alert-error">{{ error }}</div>
+            }
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName">Prénom *</label>
+                <input 
+                  type="text" 
+                  id="firstName" 
+                  name="firstName" 
+                  [(ngModel)]="currentClient.firstName" 
+                  class="form-control" 
+                  placeholder="Jean"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label for="lastName">Nom *</label>
+                <input 
+                  type="text" 
+                  id="lastName" 
+                  name="lastName" 
+                  [(ngModel)]="currentClient.lastName" 
+                  class="form-control" 
+                  placeholder="Dupont"
+                  required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input 
+                type="email" 
+                id="email" 
+                name="email" 
+                [(ngModel)]="currentClient.email" 
+                class="form-control" 
+                placeholder="jean.dupont@example.com"
+                required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="phone">Téléphone *</label>
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  name="phone" 
+                  [(ngModel)]="currentClient.phone" 
+                  class="form-control" 
+                  placeholder="+212 6 12 34 56 78"
+                  required>
+              </div>
+
+              <div class="form-group">
+                <label for="cin">CIN *</label>
+                <input 
+                  type="text" 
+                  id="cin" 
+                  name="cin" 
+                  [(ngModel)]="currentClient.cin" 
+                  class="form-control" 
+                  placeholder="AB123456"
+                  required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="address">Adresse *</label>
+              <textarea 
+                id="address" 
+                name="address" 
+                [(ngModel)]="currentClient.address" 
+                class="form-control" 
+                placeholder="123 Rue de la Paix, Casablanca"
+                rows="3"
+                required></textarea>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" (click)="closeModal()" [disabled]="submitting">
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                {{ submitting ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Supprimer -->
+    @if (showDeleteModal) {
+      <div class="modal-overlay" (click)="closeDeleteModal()">
+        <div class="modal modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Confirmer la suppression</h2>
+            <button class="modal-close" (click)="closeDeleteModal()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <p>Êtes-vous sûr de vouloir supprimer ce client ?</p>
+            <p><strong>{{ clientToDelete?.firstName }} {{ clientToDelete?.lastName }}</strong></p>
+            <p class="text-danger">Cette action est irréversible.</p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeDeleteModal()" [disabled]="submitting">
+              Annuler
+            </button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="submitting">
+              {{ submitting ? 'Suppression...' : 'Supprimer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
