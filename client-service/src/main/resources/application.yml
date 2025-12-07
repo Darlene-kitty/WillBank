@@ -17,6 +17,25 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
     show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:test@example.com}
+    password: ${MAIL_PASSWORD:test}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+        debug: true
+    default-encoding: UTF-8
+    # Pour désactiver l'envoi réel pendant les tests
+    test-connection: false
 
 eureka:
   client:
@@ -36,3 +55,19 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+jwt:
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970337336763979244226452948404D6351655468576D5A7134743777217A25432A462D4A614E645267556B58703273357638792F423F4528482B4D6251655368
+  expiration: 86400000  # 24 hours in milliseconds
+  refresh-expiration: 604800000  # 7 days in milliseconds
+
+firebase:
+  config-file: classpath:serviceAccountKey.json
+
+app:
+  name: WillBank
+  email:
+    from: ${MAIL_USERNAME:noreply@willbank.com}
+    support: support@willbank.com
+  frontend:
+    url: http://localhost:4200

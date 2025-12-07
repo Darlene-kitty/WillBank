@@ -1,5 +1,6 @@
 package com.willbank.client.dto;
 
+import com.willbank.client.entity.Client;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,9 @@ public class ClientDTO {
     @NotBlank(message = "CIN is required")
     private String cin;
     
+    private Client.ClientRole role;
+    private Client.ClientStatus status;
+    private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
