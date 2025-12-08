@@ -12,6 +12,9 @@ import {
   ChangePasswordRequest
 } from '../models/client.model';
 
+// Re-export pour compatibilité
+export type { Client as User, LoginRequest } from '../models/client.model';
+
 @Injectable({
   providedIn: 'root'
 })

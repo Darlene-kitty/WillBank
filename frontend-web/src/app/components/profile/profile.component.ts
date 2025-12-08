@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService, User } from '../../services/auth.service';
+import { AuthService } from '../../services/auth.service';
+import { Client, ClientRole } from '../../models/client.model';
 import { SidebarComponent } from '../layout/sidebar/sidebar.component';
 
-interface UserProfile extends User {
-  phone?: string;
-  address?: string;
+interface UserProfile extends Client {
   birthDate?: string;
   memberSince?: string;
   accountStatus?: string;
@@ -45,21 +44,22 @@ export class ProfileComponent implements OnInit {
     email: '',
     firstName: '',
     lastName: '',
-    role: 'CLIENT',
+    cin: '',
     phone: '',
     address: '',
+    role: ClientRole.CLIENT,
     birthDate: ''
   };
 
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    const currentUser = this.authService.getCurrentUser();
+    const currentUser = this.authService.getCurrentUserValue();
     if (currentUser) {
       this.user = {
         ...currentUser,
-        phone: '+33 6 12 34 56 78',
-        address: '123 Rue de la République, 75001 Paris',
+        phone: currentUser.phone || '+33 6 12 34 56 78',
+        address: currentUser.address || '123 Rue de la République, 75001 Paris',
         birthDate: '15/05/1990',
         memberSince: 'janvier 2020',
         accountStatus: 'Compte Validé'

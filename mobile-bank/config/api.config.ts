@@ -10,7 +10,7 @@
 
 export const API_CONFIG = {
   // URL de base de l'API Gateway
-  BASE_URL: 'http://10.0.2.2:8080', // Changez selon votre environnement
+  BASE_URL: 'http://10.0.2.2:8081', // Changez selon votre environnement
   
   // Timeout des requêtes (en millisecondes)
   TIMEOUT: 15000,
