@@ -1,0 +1,38 @@
+export const Colors = {
+  light: {
+    background: '#F8FAFB',
+    backgroundSecondary: '#FFFFFF',
+    card: '#FFFFFF',
+    cardSecondary: '#F0F4F8',
+    primary: '#0066FF',
+    primaryLight: '#E6F0FF',
+    secondary: '#00C48C',
+    accent: '#FFB800',
+    success: '#00C48C',
+    error: '#FF3B30',
+    warning: '#FFB800',
+    text: '#1A1D1F',
+    textSecondary: '#6F767E',
+    border: '#E4E7EB',
+    shadow: 'rgba(0, 0, 0, 0.08)',
+  },
+  dark: {
+    background: '#0B1120',
+    backgroundSecondary: '#111827',
+    card: '#1A2332',
+    cardSecondary: '#141B2B',
+    primary: '#0066FF',
+    primaryLight: '#1A3A6B',
+    secondary: '#00C48C',
+    accent: '#FFB800',
+    success: '#00C48C',
+    error: '#FF3B30',
+    warning: '#FFB800',
+    text: '#FFFFFF',
+    textSecondary: '#9CA3AF',
+    border: '#2D3748',
+    shadow: 'rgba(0, 0, 0, 0.4)',
+  },
+};
+
+export type ColorScheme = 'light' | 'dark';
