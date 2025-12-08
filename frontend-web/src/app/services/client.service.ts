@@ -1,98 +1,76 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { ApiService } from './api.service';
-import { Client } from '../models/client.model';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { Client } from '../models/client.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClientService {
-  private endpoint = '/api/clients';
-  private useMockData = !environment.production; // Mode mock en développement
+  private readonly ENDPOINT = `${environment.apiUrl}/api/clients`;
 
-  private mockClients: Client[] = [
-    {
-      id: 1,
-      firstName: 'Ahmed',
-      lastName: 'Alami',
-      email: 'ahmed@willbank.ma',
-      phone: '+212 6 12 34 56 78',
-      address: '123 Rue Mohammed V, Casablanca',
-      cin: 'AB123456',
-      createdAt: new Date('2024-01-15')
-    },
-    {
-      id: 2,
-      firstName: 'Fatima',
-      lastName: 'Benali',
-      email: 'fatima.benali@email.com',
-      phone: '+212 6 98 76 54 32',
-      address: '45 Avenue Hassan II, Rabat',
-      cin: 'CD789012',
-      createdAt: new Date('2024-02-20')
-    },
-    {
-      id: 3,
-      firstName: 'Youssef',
-      lastName: 'Idrissi',
-      email: 'youssef.idrissi@email.com',
-      phone: '+212 6 55 44 33 22',
-      address: '78 Boulevard Zerktouni, Marrakech',
-      cin: 'EF345678',
-      createdAt: new Date('2024-03-10')
-    }
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor(private api: ApiService) {}
-
+  /**
+   * Récupère tous les clients
+   */
   getAllClients(): Observable<Client[]> {
-    if (this.useMockData) {
-      return of(this.mockClients).pipe(delay(800));
-    }
-    return this.api.get<Client[]>(this.endpoint);
+    return this.http.get<Client[]>(this.ENDPOINT).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère un client par son ID
+   */
   getClientById(id: number): Observable<Client> {
-    if (this.useMockData) {
-      const client = this.mockClients.find(c => c.id === id);
-      return of(client!).pipe(delay(500));
-    }
-    return this.api.get<Client>(`${this.endpoint}/${id}`);
+    return this.http.get<Client>(`${this.ENDPOINT}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Crée un nouveau client
+   */
   createClient(client: Client): Observable<Client> {
-    if (this.useMockData) {
-      const newClient = {
-        ...client,
-        id: Math.max(...this.mockClients.map(c => c.id || 0)) + 1,
-        createdAt: new Date()
-      };
-      this.mockClients.push(newClient);
-      return of(newClient).pipe(delay(500));
-    }
-    return this.api.post<Client>(this.endpoint, client);
+    return this.http.post<Client>(this.ENDPOINT, client).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Met à jour un client
+   */
   updateClient(id: number, client: Client): Observable<Client> {
-    if (this.useMockData) {
-      const index = this.mockClients.findIndex(c => c.id === id);
-      if (index !== -1) {
-        this.mockClients[index] = { ...client, id, updatedAt: new Date() };
-      }
-      return of(this.mockClients[index]).pipe(delay(500));
-    }
-    return this.api.put<Client>(`${this.endpoint}/${id}`, client);
+    return this.http.put<Client>(`${this.ENDPOINT}/${id}`, client).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Supprime un client
+   */
   deleteClient(id: number): Observable<void> {
-    if (this.useMockData) {
-      const index = this.mockClients.findIndex(c => c.id === id);
-      if (index !== -1) {
-        this.mockClients.splice(index, 1);
-      }
-      return of(void 0).pipe(delay(500));
+    return this.http.delete<void>(`${this.ENDPOINT}/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Gère les erreurs HTTP
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Une erreur est survenue';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Erreur: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || `Erreur ${error.status}: ${error.statusText}`;
     }
-    return this.api.delete<void>(`${this.endpoint}/${id}`);
+
+    console.error('Client service error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }
