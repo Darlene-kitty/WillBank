@@ -1,118 +1,123 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { ApiService } from './api.service';
-import { Account, AccountBalance } from '../models/account.model';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
+import { Account, CreateAccountRequest } from '../models/account.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AccountService {
-  private endpoint = '/api/accounts';
-  private useMockData = !environment.production;
+  private readonly ENDPOINT = `${environment.apiUrl}/api/accounts`;
 
-  private mockAccounts: Account[] = [
-    {
-      id: 1,
-      accountNumber: 'MA001234567890123456',
-      accountType: 'CHECKING',
-      balance: 15420.50,
-      clientId: 1,
-      status: 'ACTIVE',
-      createdAt: new Date('2024-01-15')
-    },
-    {
-      id: 2,
-      accountNumber: 'MA009876543210987654',
-      accountType: 'SAVINGS',
-      balance: 8750.00,
-      clientId: 1,
-      status: 'ACTIVE',
-      createdAt: new Date('2024-02-01')
-    },
-    {
-      id: 3,
-      accountNumber: 'MA005555666677778888',
-      accountType: 'CHECKING',
-      balance: 3200.75,
-      clientId: 2,
-      status: 'ACTIVE',
-      createdAt: new Date('2024-02-20')
-    }
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor(private api: ApiService) {}
-
+  /**
+   * Récupère tous les comptes
+   */
   getAllAccounts(): Observable<Account[]> {
-    if (this.useMockData) {
-      return of(this.mockAccounts).pipe(delay(800));
-    }
-    return this.api.get<Account[]>(this.endpoint);
+    return this.http.get<Account[]>(this.ENDPOINT).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère un compte par son ID
+   */
   getAccountById(id: number): Observable<Account> {
-    if (this.useMockData) {
-      const account = this.mockAccounts.find(a => a.id === id);
-      return of(account!).pipe(delay(500));
-    }
-    return this.api.get<Account>(`${this.endpoint}/${id}`);
+    return this.http.get<Account>(`${this.ENDPOINT}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère un compte par son numéro
+   */
+  getAccountByNumber(accountNumber: string): Observable<Account> {
+    return this.http.get<Account>(`${this.ENDPOINT}/number/${accountNumber}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère tous les comptes d'un client
+   */
   getAccountsByClientId(clientId: number): Observable<Account[]> {
-    if (this.useMockData) {
-      const accounts = this.mockAccounts.filter(a => a.clientId === clientId);
-      return of(accounts).pipe(delay(500));
-    }
-    return this.api.get<Account[]>(`${this.endpoint}/client/${clientId}`);
+    return this.http.get<Account[]>(`${this.ENDPOINT}/client/${clientId}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  getAccountBalance(id: number): Observable<AccountBalance> {
-    if (this.useMockData) {
-      const account = this.mockAccounts.find(a => a.id === id);
-      return of({
-        accountId: id,
-        balance: account?.balance || 0,
-        lastUpdated: new Date()
-      }).pipe(delay(500));
-    }
-    return this.api.get<AccountBalance>(`${this.endpoint}/${id}/balance`);
+  /**
+   * Récupère le solde d'un compte
+   */
+  getAccountBalance(id: number): Observable<number> {
+    return this.http.get<number>(`${this.ENDPOINT}/${id}/balance`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  createAccount(account: Account): Observable<Account> {
-    if (this.useMockData) {
-      const newAccount = {
-        ...account,
-        id: Math.max(...this.mockAccounts.map(a => a.id || 0)) + 1,
-        accountNumber: `MA${Math.random().toString().slice(2, 20)}`,
-        balance: 0,
-        status: 'ACTIVE' as const,
-        createdAt: new Date()
-      };
-      this.mockAccounts.push(newAccount);
-      return of(newAccount).pipe(delay(500));
-    }
-    return this.api.post<Account>(this.endpoint, account);
+  /**
+   * Crée un nouveau compte
+   */
+  createAccount(request: CreateAccountRequest): Observable<Account> {
+    return this.http.post<Account>(this.ENDPOINT, request).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Met à jour un compte
+   */
   updateAccount(id: number, account: Account): Observable<Account> {
-    if (this.useMockData) {
-      const index = this.mockAccounts.findIndex(a => a.id === id);
-      if (index !== -1) {
-        this.mockAccounts[index] = { ...account, id, updatedAt: new Date() };
-      }
-      return of(this.mockAccounts[index]).pipe(delay(500));
-    }
-    return this.api.put<Account>(`${this.endpoint}/${id}`, account);
+    return this.http.put<Account>(`${this.ENDPOINT}/${id}`, account).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Crédite un compte
+   */
+  creditAccount(id: number, amount: number): Observable<void> {
+    const params = new HttpParams().set('amount', amount.toString());
+    return this.http.post<void>(`${this.ENDPOINT}/${id}/credit`, null, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Débite un compte
+   */
+  debitAccount(id: number, amount: number): Observable<void> {
+    const params = new HttpParams().set('amount', amount.toString());
+    return this.http.post<void>(`${this.ENDPOINT}/${id}/debit`, null, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Supprime un compte
+   */
   deleteAccount(id: number): Observable<void> {
-    if (this.useMockData) {
-      const index = this.mockAccounts.findIndex(a => a.id === id);
-      if (index !== -1) {
-        this.mockAccounts.splice(index, 1);
-      }
-      return of(void 0).pipe(delay(500));
+    return this.http.delete<void>(`${this.ENDPOINT}/${id}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Gère les erreurs HTTP
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Une erreur est survenue';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Erreur: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || `Erreur ${error.status}: ${error.statusText}`;
     }
-    return this.api.delete<void>(`${this.endpoint}/${id}`);
+
+    console.error('Account service error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

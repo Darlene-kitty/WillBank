@@ -1,3 +1,5 @@
+// Types et interfaces pour l'authentification et les clients
+
 export enum ClientRole {
   CLIENT = 'CLIENT',
   AGENT = 'AGENT',
@@ -21,9 +23,9 @@ export interface Client {
   cin: string;
   role?: ClientRole;
   status?: ClientStatus;
-  lastLogin?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
+  lastLogin?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface LoginRequest {
@@ -58,4 +60,10 @@ export interface RefreshTokenRequest {
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface ApiError {
+  message: string;
+  status: number;
+  timestamp?: string;
 }

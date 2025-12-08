@@ -1,69 +1,154 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
-
-export interface User {
-  id: number;
-  email: string;
-  firstName: string;
-  lastName: string;
-  role: 'CLIENT' | 'ADMIN';
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import {
+  Client,
+  LoginRequest,
+  RegisterRequest,
+  LoginResponse,
+  RefreshTokenRequest,
+  ChangePasswordRequest
+} from '../models/client.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  private readonly AUTH_ENDPOINT = `${environment.apiUrl}/api/auth`;
+  private currentUserSubject = new BehaviorSubject<Client | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor() {
+  constructor(private http: HttpClient) {
+    // Restaure l'utilisateur depuis le localStorage
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
+      try {
+        this.currentUserSubject.next(JSON.parse(storedUser));
+      } catch (error) {
+        console.error('Error parsing stored user:', error);
+        localStorage.removeItem('currentUser');
+      }
     }
   }
 
-  login(credentials: LoginRequest): Observable<User> {
-    // Simulation d'authentification (à remplacer par un vrai appel API)
-    const mockUser: User = {
-      id: 1,
-      email: credentials.email,
-      firstName: 'Ahmed',
-      lastName: 'Alami',
-      role: 'CLIENT'
-    };
-
-    return of(mockUser).pipe(
-      delay(1000),
-      tap(user => {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        localStorage.setItem('token', 'mock-jwt-token');
-        this.currentUserSubject.next(user);
-      })
+  /**
+   * Authentifie un utilisateur
+   */
+  login(credentials: LoginRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.AUTH_ENDPOINT}/login`, credentials).pipe(
+      tap(response => this.saveAuthData(response)),
+      catchError(this.handleError)
     );
   }
 
+  /**
+   * Enregistre un nouveau client
+   */
+  register(data: RegisterRequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.AUTH_ENDPOINT}/register`, data).pipe(
+      tap(response => this.saveAuthData(response)),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Rafraîchit le token d'accès
+   */
+  refreshToken(refreshToken: string): Observable<LoginResponse> {
+    const request: RefreshTokenRequest = { refreshToken };
+    return this.http.post<LoginResponse>(`${this.AUTH_ENDPOINT}/refresh`, request).pipe(
+      tap(response => this.saveAuthData(response)),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère le profil de l'utilisateur connecté
+   */
+  getCurrentUser(): Observable<Client> {
+    return this.http.get<Client>(`${this.AUTH_ENDPOINT}/me`).pipe(
+      tap(user => {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        this.currentUserSubject.next(user);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Change le mot de passe de l'utilisateur connecté
+   */
+  changePassword(request: ChangePasswordRequest): Observable<{ message: string }> {
+    return this.http.put<{ message: string }>(`${this.AUTH_ENDPOINT}/change-password`, request).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Déconnecte l'utilisateur
+   */
   logout(): void {
     localStorage.removeItem('currentUser');
-    localStorage.removeItem('token');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
     this.currentUserSubject.next(null);
   }
 
+  /**
+   * Vérifie si l'utilisateur est authentifié
+   */
   isAuthenticated(): boolean {
-    return !!this.currentUserSubject.value;
+    return !!this.getToken();
   }
 
-  getCurrentUser(): User | null {
+  /**
+   * Récupère l'utilisateur courant depuis le BehaviorSubject
+   */
+  getCurrentUserValue(): Client | null {
     return this.currentUserSubject.value;
   }
 
+  /**
+   * Récupère le token d'accès
+   */
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return localStorage.getItem('accessToken');
+  }
+
+  /**
+   * Récupère le refresh token
+   */
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
+  }
+
+  /**
+   * Sauvegarde les données d'authentification
+   */
+  private saveAuthData(response: LoginResponse): void {
+    localStorage.setItem('accessToken', response.accessToken);
+    localStorage.setItem('refreshToken', response.refreshToken);
+    localStorage.setItem('currentUser', JSON.stringify(response.client));
+    this.currentUserSubject.next(response.client);
+  }
+
+  /**
+   * Gère les erreurs HTTP
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Une erreur est survenue';
+
+    if (error.error instanceof ErrorEvent) {
+      // Erreur côté client
+      errorMessage = `Erreur: ${error.error.message}`;
+    } else {
+      // Erreur côté serveur
+      errorMessage = error.error?.message || `Erreur ${error.status}: ${error.statusText}`;
+    }
+
+    console.error('Auth error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }
