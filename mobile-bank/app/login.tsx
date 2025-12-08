@@ -1,34 +1,41 @@
 import { useTheme } from '@/contexts/theme-context';
+import { useAuth } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    setIsLoading(true);
-    // Simulate login delay
-    setTimeout(() => {
-      setIsLoading(false);
-      router.replace('/(tabs)/');
-    }, 500);
-  };
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
 
-  const handleBiometric = async () => {
     setIsLoading(true);
-    // Simulate biometric authentication
-    setTimeout(() => {
+    setError('');
+    
+    try {
+      await login(email, password);
+      // Navigation is handled by AuthContext
+    } catch (err: any) {
+      console.error('Login error:', err);
+      const errorMessage = err.response?.data?.message || 'Email ou mot de passe incorrect';
+      setError(errorMessage);
+      Alert.alert('Erreur de connexion', errorMessage);
+    } finally {
       setIsLoading(false);
-      router.replace('/(tabs)/');
-    }, 500);
+    }
   };
 
   return (
@@ -104,6 +111,14 @@ export default function LoginScreen() {
             </View>
           </View>
 
+          {/* Error Message */}
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle" size={16} color="#ef4444" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
           {/* Forgot Password */}
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={[styles.forgotPasswordText, { color: colors.primary }]}>
@@ -130,17 +145,6 @@ export default function LoginScreen() {
             <Text style={[styles.dividerText, { color: colors.textSecondary }]}>ou</Text>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
-
-          {/* Biometric Button */}
-          <TouchableOpacity 
-            style={[styles.biometricButton, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}
-            onPress={handleBiometric}
-          >
-            <Ionicons name="finger-print" size={24} color={colors.primary} />
-            <Text style={[styles.biometricButtonText, { color: colors.text }]}>
-              Connexion biométrique
-            </Text>
-          </TouchableOpacity>
 
           {/* Register Link */}
           <View style={styles.registerContainer}>
@@ -301,20 +305,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
-  biometricButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    padding: 18,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    marginBottom: 24,
-  },
-  biometricButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
@@ -327,5 +317,19 @@ const styles = StyleSheet.create({
   registerLink: {
     fontSize: 15,
     fontWeight: '700',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#ef4444',
   },
 });
