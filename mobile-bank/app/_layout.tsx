@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/contexts/theme-context';
+import { AuthProvider } from '@/contexts/auth-context';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -24,6 +25,7 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
+      <AuthProvider>
       <Stack
         screenOptions={{
           headerShown: false,
@@ -126,6 +128,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

@@ -1,39 +1,62 @@
 import { AnimatedCard } from '@/components/animated-card';
 import { AnimatedFAB } from '@/components/animated-fab';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuth } from '@/contexts/auth-context';
+import { useAccounts } from '@/hooks/useAccounts';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { user } = useAuth();
+  const { accounts, loading, error, loadAccountsByClient, refreshing, onRefresh } = useAccounts();
 
-  const accounts = [
-    { id: 1, name: 'Everyday Checking', number: '**** 1234', balance: 10110.00, icon: '💳' },
-    { id: 2, name: 'High-Yield Savings', number: '**** 5678', balance: 5120.50, icon: '🏦' },
-  ];
-
-  const recentActivity = [
-    { id: 1, name: 'Apple Store', date: 'Today', amount: -999.00, icon: '🛍️' },
-    { id: 2, name: 'Starbucks', date: 'Yesterday', amount: -6.50, icon: '🍴' },
-    { id: 3, name: 'Direct Deposit', date: 'Mar 15, 2024', amount: 2500.00, icon: '💵' },
-    { id: 4, name: 'Metro Transit', date: 'Mar 14, 2024', amount: -2.75, icon: '🚌' },
-  ];
+  useEffect(() => {
+    if (user?.id) {
+      loadAccountsByClient(user.id);
+    }
+  }, [user]);
 
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
 
+  const getAccountIcon = (accountType: string) => {
+    switch (accountType) {
+      case 'SAVINGS':
+        return '🏦';
+      case 'CHECKING':
+        return '💳';
+      default:
+        return '💰';
+    }
+  };
+
+  const formatAccountNumber = (accountNumber: string) => {
+    return `**** ${accountNumber.slice(-4)}`;
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-              <Text style={styles.avatarText}>W</Text>
+              <Text style={styles.avatarText}>
+                {user?.firstName?.[0] || 'W'}
+              </Text>
             </View>
-            <Text style={[styles.greeting, { color: colors.text }]}>Good morning, Will</Text>
+            <Text style={[styles.greeting, { color: colors.text }]}>
+              Bonjour, {user?.firstName || 'Client'}
+            </Text>
           </View>
           <TouchableOpacity onPress={() => router.push('/notifications')}>
             <Ionicons name="notifications-outline" size={24} color={colors.text} />
@@ -41,38 +64,74 @@ export default function DashboardScreen() {
         </View>
 
         <AnimatedCard style={[styles.balanceCard, { backgroundColor: colors.card }]}>
-          <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>Total Balance</Text>
+          <Text style={[styles.balanceLabel, { color: colors.textSecondary }]}>Solde Total</Text>
           <Text style={[styles.balanceAmount, { color: colors.text }]}>
-            ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            {totalBalance.toLocaleString('fr-MA', { minimumFractionDigits: 2 })} DH
           </Text>
           
-          {accounts.map((account, index) => (
-            <Pressable 
-              key={account.id} 
-              style={({ pressed }) => [
-                styles.accountItem, 
-                { 
-                  backgroundColor: colors.cardSecondary,
-                  opacity: pressed ? 0.7 : 1,
-                  transform: [{ scale: pressed ? 0.98 : 1 }],
-                }
-              ]}
-              onPress={() => router.push(`/account-details?id=${account.id}`)}
-            >
-              <View style={styles.accountLeft}>
-                <View style={[styles.accountIcon, { backgroundColor: colors.primary }]}>
-                  <Text style={styles.accountIconText}>{account.icon}</Text>
-                </View>
-                <View>
-                  <Text style={[styles.accountName, { color: colors.text }]}>{account.name}</Text>
-                  <Text style={[styles.accountNumber, { color: colors.textSecondary }]}>{account.number}</Text>
-                </View>
-              </View>
-              <Text style={[styles.accountBalance, { color: colors.text }]}>
-                ${account.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          {loading && accounts.length === 0 ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Chargement de vos comptes...
               </Text>
-            </Pressable>
-          ))}
+            </View>
+          ) : error ? (
+            <View style={styles.errorContainer}>
+              <Ionicons name="alert-circle-outline" size={24} color="#ef4444" />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : accounts.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons name="card-outline" size={48} color={colors.textSecondary} />
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                Aucun compte disponible
+              </Text>
+            </View>
+          ) : (
+            accounts.map((account, index) => (
+              <Pressable 
+                key={account.id} 
+                style={({ pressed }) => [
+                  styles.accountItem, 
+                  { 
+                    backgroundColor: colors.cardSecondary,
+                    opacity: pressed ? 0.7 : 1,
+                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                  }
+                ]}
+                onPress={() => router.push(`/account-details?id=${account.id}`)}
+              >
+                <View style={styles.accountLeft}>
+                  <View style={[styles.accountIcon, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.accountIconText}>{getAccountIcon(account.accountType)}</Text>
+                  </View>
+                  <View>
+                    <Text style={[styles.accountName, { color: colors.text }]}>
+                      {account.accountType === 'SAVINGS' ? 'Compte Épargne' : 'Compte Courant'}
+                    </Text>
+                    <Text style={[styles.accountNumber, { color: colors.textSecondary }]}>
+                      {formatAccountNumber(account.accountNumber)}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.accountRight}>
+                  <Text style={[styles.accountBalance, { color: colors.text }]}>
+                    {account.balance.toLocaleString('fr-MA', { minimumFractionDigits: 2 })} DH
+                  </Text>
+                  <View style={[styles.statusBadge, { 
+                    backgroundColor: account.status === 'ACTIVE' ? '#22c55e20' : '#ef444420' 
+                  }]}>
+                    <Text style={[styles.statusText, { 
+                      color: account.status === 'ACTIVE' ? '#22c55e' : '#ef4444' 
+                    }]}>
+                      {account.status === 'ACTIVE' ? 'Actif' : 'Bloqué'}
+                    </Text>
+                  </View>
+                </View>
+              </Pressable>
+            ))
+          )}
         </AnimatedCard>
 
         <Pressable 
@@ -143,45 +202,8 @@ export default function DashboardScreen() {
           </Pressable>
         </Animated.View>
 
-        <View style={styles.recentActivity}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <TouchableOpacity onPress={() => router.push('/transaction-history')}>
-              <Text style={styles.viewAllText}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          {recentActivity.map((transaction, index) => (
-            <Animated.View 
-              key={transaction.id} 
-              entering={FadeInDown.delay(300 + index * 50).duration(400)}
-            >
-              <Pressable 
-                style={({ pressed }) => [
-                  styles.transactionItem,
-                  { opacity: pressed ? 0.7 : 1 }
-                ]}
-              >
-                <View style={styles.transactionLeft}>
-                  <View style={styles.transactionIcon}>
-                    <Text style={styles.transactionIconText}>{transaction.icon}</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.transactionName}>{transaction.name}</Text>
-                    <Text style={styles.transactionDate}>{transaction.date}</Text>
-                  </View>
-                </View>
-                <Text style={[
-                  styles.transactionAmount,
-                  transaction.amount > 0 ? styles.positiveAmount : styles.negativeAmount
-                ]}>
-                  {transaction.amount > 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
-                </Text>
-              </Pressable>
-            </Animated.View>
-          ))}
-        </View>
-
+        {/* Note: Transactions history will be implemented with backend integration */}
+        
         <View style={{ height: 100 }} />
       </ScrollView>
 
@@ -320,8 +342,50 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   accountBalance: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '700',
+  },
+  accountRight: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+  },
+  errorContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    gap: 12,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#ef4444',
+    textAlign: 'center',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+    gap: 12,
+  },
+  emptyText: {
+    fontSize: 14,
   },
   quickTransferBtn: {
     backgroundColor: '#3B9EFF',

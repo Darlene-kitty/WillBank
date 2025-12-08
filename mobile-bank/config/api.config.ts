@@ -8,9 +8,11 @@
  * - Production : https://api.willbank.ma
  */
 
+const URL_ANDROID_EMULATOR = 'http://10.0.2.2:8081';
+
 export const API_CONFIG = {
   // URL de base de l'API Gateway
-  BASE_URL: 'http://10.0.2.2:8081', // Changez selon votre environnement
+  BASE_URL: URL_ANDROID_EMULATOR, // Changez selon votre environnement
   
   // Timeout des requêtes (en millisecondes)
   TIMEOUT: 15000,
@@ -52,7 +54,7 @@ export const ENVIRONMENT_CONFIGS = {
   // Émulateur Android
   ANDROID_EMULATOR: {
     ...API_CONFIG,
-    BASE_URL: 'http://10.0.2.2:8080',
+    BASE_URL: URL_ANDROID_EMULATOR,
   },
   
   // iOS Simulator
