@@ -2,20 +2,39 @@
 
 Application bancaire mobile complète développée avec React Native, Expo Router et animations avancées.
 
-## ✅ Statut: 100% Opérationnel
+## ✅ Statut: 100% Opérationnel + Services Backend Intégrés
 
 - ✅ **0 erreurs** de diagnostic
 - ✅ **0 bugs** détectés
 - ✅ **10 écrans** fonctionnels
+- ✅ **Services Backend** intégrés (Auth, Client, Account)
+- ✅ **Authentification JWT** avec refresh automatique
+- ✅ **Hooks React** personnalisés
 - ✅ **Mode clair/sombre** avec toggle animé
 - ✅ **Animations avancées** (FAB, Success Icon, Cards)
-- ✅ **Prêt pour production**
+- ✅ **Prêt pour intégration backend**
 
 ## 🚀 Démarrage Rapide
 
 ### Installation
 ```bash
 npm install
+
+# Installer les dépendances des services
+npm install axios @react-native-async-storage/async-storage
+```
+
+### Configuration API
+Éditez `config/api.config.ts` pour configurer l'URL de votre backend :
+```typescript
+// Pour émulateur Android
+BASE_URL: 'http://10.0.2.2:8080'
+
+// Pour iOS Simulator
+BASE_URL: 'http://localhost:8080'
+
+// Pour appareil physique
+BASE_URL: 'http://192.168.1.x:8080' // Remplacez x par votre IP
 ```
 
 ### Lancement
@@ -31,6 +50,7 @@ Puis choisissez votre plateforme :
 ## 📱 Fonctionnalités
 
 ### Écrans (10)
+- ✅ **Login** - Authentification JWT avec Face ID
 - ✅ **Dashboard** - Soldes et activités récentes
 - ✅ **Profile** - Paramètres avec toggle de thème
 - ✅ **New Transfer** - Formulaire de virement
@@ -40,7 +60,18 @@ Puis choisissez votre plateforme :
 - ✅ **Beneficiaries** - Gestion des bénéficiaires
 - ✅ **Notifications** - Centre de notifications
 - ✅ **Account Details** - Détails du compte
-- ✅ **Login** - Authentification avec Face ID
+
+### Services Backend
+- ✅ **Authentification** - Login, Register, Refresh Token
+- ✅ **Gestion Client** - CRUD complet
+- ✅ **Gestion Compte** - Crédit/Débit, Solde, CRUD
+- ✅ **Auto-refresh JWT** - Transparent pour l'utilisateur
+- ✅ **Gestion d'erreurs** - Messages clairs et logging
+
+### Hooks React Personnalisés
+- ✅ **useAuth** - Authentification simplifiée
+- ✅ **useAccounts** - Gestion des comptes
+- ✅ **État partagé** - Loading, errors, data
 
 ### Thème
 - ✅ **Mode Clair** - Design lumineux
@@ -62,37 +93,99 @@ Puis choisissez votre plateforme :
 - **React Native Reanimated** - Animations performantes
 - **TypeScript** - Sécurité du code
 - **Context API** - Gestion du thème
+- **Axios** - Client HTTP pour l'API
+- **AsyncStorage** - Stockage local persistant
 
 ## 📚 Documentation
 
-- **[WILLBANK_README.md](./WILLBANK_README.md)** - Documentation complète
-- **[DEMARRAGE_RAPIDE.md](./DEMARRAGE_RAPIDE.md)** - Guide de démarrage
-- **[VALIDATION_FINALE.md](./VALIDATION_FINALE.md)** - Validation et tests
-- **[STATUS_FINAL.md](./STATUS_FINAL.md)** - Statut final du projet
+### Guides Principaux
+- **[SERVICES_README.md](./SERVICES_README.md)** - Guide des services backend
+- **[HOOKS_GUIDE.md](./HOOKS_GUIDE.md)** - Guide des hooks React personnalisés
+- **[WILLBANK_README.md](./WILLBANK_README.md)** - Documentation complète UI
+- **[DEMARRAGE_RAPIDE.md](./DEMARRAGE_RAPIDE.md)** - Guide de démarrage UI
+
+### Configuration
+- **`config/api.config.ts`** - Configuration de l'API
+- **`types/`** - Interfaces TypeScript
+- **`services/`** - Services backend (Auth, Client, Account)
+- **`hooks/`** - Hooks React personnalisés
+
+## 🚀 Exemple d'Utilisation
+
+### Login avec le Hook useAuth
+
+```typescript
+import { useAuth } from './hooks';
+
+const LoginScreen = () => {
+  const { login, isLoading, error } = useAuth();
+  
+  const handleLogin = async () => {
+    try {
+      await login({ email, password });
+      // Navigation automatique
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  
+  return (
+    <Button onPress={handleLogin} disabled={isLoading}>
+      Se connecter
+    </Button>
+  );
+};
+```
+
+### Récupérer les Comptes
+
+```typescript
+import { useAuth, useAccounts } from './hooks';
+
+const AccountsScreen = () => {
+  const { user } = useAuth();
+  const { accounts, isLoading } = useAccounts(user?.id);
+  
+  return (
+    <FlatList
+      data={accounts}
+      renderItem={({ item }) => (
+        <Text>{item.accountNumber} - {item.balance} MAD</Text>
+      )}
+    />
+  );
+};
+```
 
 ## 🎯 Test Rapide
 
-### 1. Tester le Dashboard
+### 1. Tester le Backend (Assurez-vous qu'il est démarré)
+```bash
+cd .. # Retour à la racine
+./start-all.bat  # Windows
+./start-all.sh   # Linux/Mac
+```
+
+### 2. Tester la Connexion
 ```bash
 npm start
 ```
+- Ouvrez l'écran de login
+- Utilisez un compte de test (voir backend docs)
+- Vérifiez que le token est sauvegardé
+
+### 3. Tester le Dashboard
 Vous verrez :
-- Solde total
-- Liste des comptes
+- Solde total récupéré de l'API
+- Liste des comptes du backend
 - Activités récentes
 - FAB animé
 
-### 2. Tester le Thème
+### 4. Tester le Thème
 ```
 Dashboard → Support → Apparence → Toggle Clair/Sombre
 ```
 Transition fluide entre les thèmes !
-
-### 3. Tester un Virement
-```
-Dashboard → FAB (+) → Formulaire → Confirmer
-```
-Modal de succès avec animations !
 
 ## 📊 Structure du Projet
 

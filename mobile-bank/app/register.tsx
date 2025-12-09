@@ -1,21 +1,54 @@
 import { useTheme } from '@/contexts/theme-context';
+import { useAuth } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const [fullName, setFullName] = useState('');
+  const { register } = useAuth();
+  
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [cin, setCin] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleRegister = () => {
-    // Simulate registration
-    router.replace('/(tabs)/');
+  const handleRegister = async () => {
+    if (!firstName || !lastName || !email || !phone || !address || !cin || !password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    
+    try {
+      await register({
+        firstName,
+        lastName,
+        email,
+        password,
+        phone,
+        address,
+        cin,
+      });
+      // Navigation is handled by AuthContext
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      const errorMessage = err.response?.data?.message || 'Erreur lors de l\'inscription';
+      setError(errorMessage);
+      Alert.alert('Erreur d\'inscription', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -53,17 +86,41 @@ export default function RegisterScreen() {
 
           {/* Form */}
           <View style={styles.form}>
-            {/* Full Name Input */}
+            {/* Error Message */}
+            {error ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
+            {/* First Name Input */}
             <View style={styles.inputSection}>
-              <Text style={[styles.inputLabel, { color: colors.text }]}>Nom complet</Text>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Prénom</Text>
               <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
                 <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Entrez votre nom complet"
+                  placeholder="Votre prénom"
                   placeholderTextColor={colors.textSecondary}
-                  value={fullName}
-                  onChangeText={setFullName}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  autoCapitalize="words"
+                />
+              </View>
+            </View>
+
+            {/* Last Name Input */}
+            <View style={styles.inputSection}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Nom</Text>
+              <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+                <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Votre nom"
+                  placeholderTextColor={colors.textSecondary}
+                  value={lastName}
+                  onChangeText={setLastName}
                   autoCapitalize="words"
                 />
               </View>
@@ -93,11 +150,41 @@ export default function RegisterScreen() {
                 <Ionicons name="call-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Entrez votre numéro de téléphone"
+                  placeholder="+212 6XX XX XX XX"
                   placeholderTextColor={colors.textSecondary}
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+
+            {/* Address Input */}
+            <View style={styles.inputSection}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Adresse</Text>
+              <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+                <Ionicons name="location-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Votre adresse complète"
+                  placeholderTextColor={colors.textSecondary}
+                  value={address}
+                  onChangeText={setAddress}
+                />
+              </View>
+            </View>
+
+            {/* CIN Input */}
+            <View style={styles.inputSection}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>CIN</Text>
+              <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+                <Ionicons name="card-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Numéro CIN"
+                  placeholderTextColor={colors.textSecondary}
+                  value={cin}
+                  onChangeText={setCin}
                 />
               </View>
             </View>
@@ -130,10 +217,13 @@ export default function RegisterScreen() {
 
             {/* Register Button */}
             <TouchableOpacity 
-              style={[styles.registerButton, { backgroundColor: colors.primary }]}
+              style={[styles.registerButton, { backgroundColor: colors.primary, opacity: isLoading ? 0.7 : 1 }]}
               onPress={handleRegister}
+              disabled={isLoading}
             >
-              <Text style={styles.registerButtonText}>S'inscrire</Text>
+              <Text style={styles.registerButtonText}>
+                {isLoading ? 'Inscription en cours...' : 'S\'inscrire'}
+              </Text>
             </TouchableOpacity>
 
             {/* Terms */}
@@ -273,5 +363,19 @@ const styles = StyleSheet.create({
   loginLink: {
     fontSize: 15,
     fontWeight: '700',
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef2f2',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+    gap: 8,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#ef4444',
   },
 });

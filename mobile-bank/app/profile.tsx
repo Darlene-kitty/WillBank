@@ -1,5 +1,6 @@
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuth } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -8,6 +9,7 @@ import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } f
 export default function ProfileScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { user, logout } = useAuth();
   const [biometricEnabled, setBiometricEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [promotionsEnabled, setPromotionsEnabled] = useState(false);
@@ -21,10 +23,22 @@ export default function ProfileScreen() {
         { 
           text: 'Déconnexion', 
           style: 'destructive',
-          onPress: () => router.replace('/login')
+          onPress: async () => {
+            await logout();
+          }
         }
       ]
     );
+  };
+
+  const getInitials = () => {
+    if (!user) return 'U';
+    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase();
+  };
+
+  const getFullName = () => {
+    if (!user) return 'Utilisateur';
+    return `${user.firstName || ''} ${user.lastName || ''}`.trim();
   };
 
   return (
@@ -40,11 +54,13 @@ export default function ProfileScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Profile Info */}
         <View style={styles.profileSection}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>AD</Text>
+          <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+            <Text style={styles.avatarText}>{getInitials()}</Text>
           </View>
-          <Text style={styles.profileName}>Alexandre Dubois</Text>
-          <Text style={styles.profileId}>ID Client: 742-198-335</Text>
+          <Text style={[styles.profileName, { color: colors.text }]}>{getFullName()}</Text>
+          <Text style={[styles.profileId, { color: colors.textSecondary }]}>
+            {user?.email || 'email@example.com'}
+          </Text>
         </View>
 
         {/* Appearance */}
@@ -66,49 +82,72 @@ export default function ProfileScreen() {
               </View>
               <View>
                 <Text style={[styles.menuLabel, { color: colors.text }]}>Nom et Prénom</Text>
-                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>Alexandre Dubois</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>
+                  {getFullName()}
+                </Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.card }]}>
             <View style={styles.menuLeft}>
               <View style={[styles.menuIcon, { backgroundColor: '#34C75920' }]}>
                 <Ionicons name="home" size={20} color="#34C759" />
               </View>
               <View>
-                <Text style={styles.menuLabel}>Adresse Postale</Text>
-                <Text style={styles.menuValue}>123 Rue de la République...</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Adresse Postale</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>
+                  {user?.address || 'Non renseignée'}
+                </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.card }]}>
             <View style={styles.menuLeft}>
               <View style={[styles.menuIcon, { backgroundColor: '#FF950020' }]}>
                 <Ionicons name="call" size={20} color="#FF9500" />
               </View>
               <View>
-                <Text style={styles.menuLabel}>Numéro de téléphone</Text>
-                <Text style={styles.menuValue}>+33 6 •••• ••90</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Numéro de téléphone</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>
+                  {user?.phone || 'Non renseigné'}
+                </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.card }]}>
             <View style={styles.menuLeft}>
               <View style={[styles.menuIcon, { backgroundColor: '#FF3B3020' }]}>
                 <Ionicons name="mail" size={20} color="#FF3B30" />
               </View>
               <View>
-                <Text style={styles.menuLabel}>Adresse e-mail</Text>
-                <Text style={styles.menuValue}>a••••••s@email.com</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Adresse e-mail</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>
+                  {user?.email || 'Non renseignée'}
+                </Text>
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={[styles.menuItem, { backgroundColor: colors.card }]}>
+            <View style={styles.menuLeft}>
+              <View style={[styles.menuIcon, { backgroundColor: '#5856D620' }]}>
+                <Ionicons name="card" size={20} color="#5856D6" />
+              </View>
+              <View>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>CIN</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>
+                  {user?.cin || 'Non renseigné'}
+                </Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
