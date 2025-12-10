@@ -110,3 +110,6 @@ mobile-bank/android
 application-local.yml
 application-dev.yml
 *.pid
+
+client-service/src/main/resources/serviceAccountKey.json
+**/serviceAccountKey.json
