@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator, RefreshControl } from 'react-native';
 import Animated, { 
   FadeInDown, 
   useAnimatedStyle, 
@@ -20,30 +20,73 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { useAccounts, useTransactions, useNotifications } from '@/hooks';
+import { useAuthContext } from '@/contexts/auth-context';
 
 export default function DashboardScreen() {
   const router = useRouter();
   const { colors } = useTheme();
 
+  // Hooks API - utiliser le contexte d'authentification
+  const { clientId, isAuthenticated, isLoading: authLoading, client } = useAuthContext();
+  const { accounts, isLoading: accountsLoading, refreshAccounts, totalBalance } = useAccounts(clientId);
+  const { transactions, isLoading: transactionsLoading, refreshTransactions } = useTransactions(accounts[0]?.id);
+  const { unreadCount } = useNotifications(client?.email || null);
+
+  // État local
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [balanceVisible, setBalanceVisible] = React.useState(true);
+  const [isMounted, setIsMounted] = React.useState(false);
+
   // Animation values
   const headerScale = useSharedValue(0.9);
   const headerOpacity = useSharedValue(0);
   const balanceScale = useSharedValue(0);
-  const [balanceVisible, setBalanceVisible] = React.useState(true);
 
-  const accounts = [
-    { id: 1, name: 'Compte Courant', number: '**** 1234', balance: 10110.00, icon: 'card', color: '#0066FF' },
-    { id: 2, name: 'Épargne Premium', number: '**** 5678', balance: 5120.50, icon: 'wallet', color: '#667EEA' },
-  ];
+  // Marquer le composant comme monté
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
-  const recentActivity = [
-    { id: 1, name: 'Apple Store', date: "Aujourd'hui", amount: -999.00, icon: 'bag-handle', category: 'Shopping' },
-    { id: 2, name: 'Starbucks', date: 'Hier', amount: -6.50, icon: 'cafe', category: 'Restaurant' },
-    { id: 3, name: 'Salaire', date: '15 Mar 2024', amount: 2500.00, icon: 'cash', category: 'Revenu' },
-    { id: 4, name: 'Transport', date: '14 Mar 2024', amount: -2.75, icon: 'bus', category: 'Transport' },
-  ];
+  // Redirection si non authentifié (après que le composant soit monté et l'auth vérifiée)
+  useEffect(() => {
+    if (isMounted && !authLoading && !isAuthenticated) {
+      router.replace('/(auth)/login' as any);
+    }
+  }, [isMounted, authLoading, isAuthenticated]);
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
+  // Calcul des stats mensuelles
+  const monthlyIncome = React.useMemo(() => {
+    return transactions
+      .filter(tx => tx.type === 'DEPOSIT' && tx.amount > 0)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [transactions]);
+
+  const monthlyExpenses = React.useMemo(() => {
+    return transactions
+      .filter(tx => (tx.type === 'WITHDRAWAL' || tx.type === 'TRANSFER') && tx.amount > 0)
+      .reduce((sum, tx) => sum + tx.amount, 0);
+  }, [transactions]);
+
+  // Prendre les 10 dernières transactions
+  const recentActivity = React.useMemo(() => {
+    return transactions.slice(0, 10);
+  }, [transactions]);
+
+  // Gestion du refresh
+  const onRefresh = React.useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        refreshAccounts(),
+        refreshTransactions(),
+      ]);
+    } catch (error) {
+      console.error('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshAccounts, refreshTransactions]);
 
   // Entrance animations
   useEffect(() => {
@@ -65,6 +108,18 @@ export default function DashboardScreen() {
     transform: [{ scale: balanceScale.value }],
   }));
 
+  // Affichage du loader initial - inclure aussi authLoading
+  if (authLoading || (accountsLoading && accounts.length === 0)) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ color: colors.text, marginTop: 16 }}>Chargement...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Premium Gradient Header */}
@@ -84,33 +139,45 @@ export default function DashboardScreen() {
             </LinearGradient>
             <View>
               <Text style={styles.greetingSmall}>Bonjour,</Text>
-              <Text style={styles.greeting}>William</Text>
+              <Text style={styles.greeting}>{client?.firstName || 'Utilisateur'}</Text>
             </View>
           </View>
           <View style={styles.headerRight}>
             <Pressable 
-              onPress={() => router.push('/account-settings' as any)}
+              onPress={() => router.push('/(screens)/account-settings' as any)}
               style={styles.settingsButton}
             >
               <Ionicons name="settings-outline" size={24} color="#fff" />
             </Pressable>
             <Pressable 
-              onPress={() => router.push('/notifications')}
+              onPress={() => router.push('/(screens)/notifications')}
               style={styles.notificationButton}
             >
               <Ionicons name="notifications" size={24} color="#fff" />
-              <PremiumBadge
-                text="3"
-                variant="error"
-                size="small"
-                style={styles.notificationBadge}
-              />
+              {unreadCount > 0 && (
+                <PremiumBadge
+                  text={unreadCount.toString()}
+                  variant="error"
+                  size="small"
+                  style={styles.notificationBadge}
+                />
+              )}
             </Pressable>
           </View>
         </Animated.View>
       </LinearGradient>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.scrollView} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+      >
 
         {/* Premium Balance Card */}
         <PremiumCard 
@@ -151,7 +218,7 @@ export default function DashboardScreen() {
             <PremiumStat
               icon="trending-up"
               label="Revenus"
-              value="+2 500 €"
+              value={`+${monthlyIncome.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`}
               colors={['#34C759', '#28A745']}
               variant="vertical"
               style={styles.statItem}
@@ -160,7 +227,7 @@ export default function DashboardScreen() {
             <PremiumStat
               icon="trending-down"
               label="Dépenses"
-              value="-1 008 €"
+              value={`-${monthlyExpenses.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} €`}
               colors={['#FF3B30', '#CC2E26']}
               variant="vertical"
               style={styles.statItem}
@@ -177,20 +244,26 @@ export default function DashboardScreen() {
             </Pressable>
           </View>
           
-          {accounts.map((account, index) => (
-            <PremiumAccountCard
-              key={account.id}
-              name={account.name}
-              number={account.number}
-              balance={account.balance}
-              icon={account.icon as any}
-              colors={[account.color, account.color + 'CC']}
-              balanceVisible={balanceVisible}
-              onPress={() => router.push(`/account-details?id=${account.id}` as any)}
-              delay={200 + index * 100}
-              style={styles.accountCard}
-            />
-          ))}
+          {accounts.length > 0 ? (
+            accounts.map((account, index) => (
+              <PremiumAccountCard
+                key={account.id}
+                name={account.accountType === 'CHECKING' ? 'Compte Courant' : account.accountType === 'SAVINGS' ? 'Compte Épargne' : 'Compte Business'}
+                number={`**** ${account.accountNumber.slice(-4)}`}
+                balance={account.balance}
+                icon={account.accountType === 'CHECKING' ? 'card' : 'wallet'}
+                colors={account.accountType === 'CHECKING' ? ['#0066FF', '#0052CC'] : ['#667EEA', '#764BA2']}
+                balanceVisible={balanceVisible}
+                onPress={() => router.push(`/(screens)/account-details?id=${account.id}` as any)}
+                delay={200 + index * 100}
+                style={styles.accountCard}
+              />
+            ))
+          ) : (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <Text style={{ color: colors.textSecondary }}>Aucun compte disponible</Text>
+            </View>
+          )}
         </View>
 
         {/* Premium Action Buttons */}
@@ -203,7 +276,7 @@ export default function DashboardScreen() {
               styles.actionBtn,
               { opacity: pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }
             ]}
-            onPress={() => router.push('/new-transfer' as any)}
+            onPress={() => router.push('/(screens)/new-transfer' as any)}
           >
             <LinearGradient
               colors={['#0066FF', '#0052CC']}
@@ -239,7 +312,7 @@ export default function DashboardScreen() {
               styles.actionBtn,
               { opacity: pressed ? 0.9 : 1, transform: [{ scale: pressed ? 0.95 : 1 }] }
             ]}
-            onPress={() => router.push('/deposit' as any)}
+            onPress={() => router.push('/(screens)/deposit' as any)}
           >
             <LinearGradient
               colors={['#34C759', '#28A745']}
@@ -274,23 +347,34 @@ export default function DashboardScreen() {
         <View style={styles.recentActivity}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Activité Récente</Text>
-            <Pressable onPress={() => router.push('/transaction-history' as any)}>
+            <Pressable onPress={() => router.push('/(screens)/transaction-history' as any)}>
               <Text style={styles.viewAllText}>Tout voir →</Text>
             </Pressable>
           </View>
 
-          {recentActivity.map((transaction, index) => (
-            <PremiumTransactionItem
-              key={transaction.id}
-              name={transaction.name}
-              category={transaction.category}
-              date={transaction.date}
-              amount={transaction.amount}
-              icon={transaction.icon as any}
-              delay={400 + index * 80}
-              style={styles.transactionItem}
-            />
-          ))}
+          {recentActivity.length > 0 ? (
+            recentActivity.map((transaction, index) => {
+              const isPositive = transaction.type === 'DEPOSIT';
+              const displayAmount = isPositive ? transaction.amount : -transaction.amount;
+              
+              return (
+                <PremiumTransactionItem
+                  key={transaction.id}
+                  name={transaction.description || `Transaction #${transaction.id}`}
+                  category={transaction.type}
+                  date={new Date(transaction.createdAt!).toLocaleDateString('fr-FR')}
+                  amount={displayAmount}
+                  icon={transaction.type === 'DEPOSIT' ? 'arrow-down' : transaction.type === 'WITHDRAWAL' ? 'arrow-up' : 'swap-horizontal'}
+                  delay={400 + index * 80}
+                  style={styles.transactionItem}
+                />
+              );
+            })
+          ) : (
+            <View style={{ padding: 20, alignItems: 'center' }}>
+              <Text style={{ color: colors.textSecondary }}>Aucune transaction récente</Text>
+            </View>
+          )}
         </View>
 
         <View style={{ height: 40 }} />

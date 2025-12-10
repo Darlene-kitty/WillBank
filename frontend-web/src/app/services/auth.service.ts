@@ -19,7 +19,8 @@ export type { Client as User, LoginRequest } from '../models/client.model';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly AUTH_ENDPOINT = `${environment.apiUrl}/api/auth`;
+  // Utilise le client-service directement (port 8081) pour l'authentification
+  private readonly AUTH_ENDPOINT = `${environment.clientServiceUrl}/api/auth`;
   private currentUserSubject = new BehaviorSubject<Client | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
 

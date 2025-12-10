@@ -25,7 +25,7 @@ export default function NewTransferScreen() {
       return;
     }
     router.push({
-      pathname: '/transfer-confirmation',
+      pathname: '/(screens)/transfer-confirmation',
       params: {
         amount,
         account: selectedAccount,

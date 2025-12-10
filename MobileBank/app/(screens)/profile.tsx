@@ -21,7 +21,7 @@ export default function ProfileScreen() {
         { 
           text: 'Déconnexion', 
           style: 'destructive',
-          onPress: () => router.replace('/login')
+          onPress: () => router.replace('/(auth)/login')
         }
       ]
     );

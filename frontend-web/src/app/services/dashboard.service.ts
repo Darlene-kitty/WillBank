@@ -1,86 +1,92 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { ApiService } from './api.service';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, of, delay, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Dashboard, Statement } from '../models/dashboard.model';
 import { environment } from '../../environments/environment';
+
+/**
+ * Interface pour le dashboard enrichi avec plus de détails
+ */
+export interface EnrichedDashboard extends Dashboard {
+  lastLoginAt?: string;
+  pendingTransactionsCount?: number;
+  monthlySpending?: number;
+  monthlyIncome?: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class DashboardService {
-  private useMockData = !environment.production;
+  // Utilise le service dashboard-composite (port 8085)
+  private readonly ENDPOINT = `${environment.dashboardServiceUrl}/api/dashboard`;
 
-  constructor(private api: ApiService) {}
+  constructor(private http: HttpClient) {}
 
+  /**
+   * Récupère le dashboard complet d'un client
+   */
   getClientDashboard(clientId: number): Observable<Dashboard> {
-    if (this.useMockData) {
-      const mockDashboard: Dashboard = {
-        client: {
-          id: 1,
-          firstName: 'Ahmed',
-          lastName: 'Alami',
-          email: 'ahmed@willbank.ma',
-          phone: '+212 6 12 34 56 78',
-          address: '123 Rue Mohammed V, Casablanca',
-          cin: 'AB123456'
-        },
-        accounts: [
-          {
-            id: 1,
-            accountNumber: 'MA001234567890123456',
-            accountType: 'CHECKING',
-            balance: 15420.50,
-            clientId: 1,
-            status: 'ACTIVE',
-            createdAt: new Date('2024-01-15')
-          },
-          {
-            id: 2,
-            accountNumber: 'MA009876543210987654',
-            accountType: 'SAVINGS',
-            balance: 8750.00,
-            clientId: 1,
-            status: 'ACTIVE',
-            createdAt: new Date('2024-02-01')
-          }
-        ],
-        recentTransactions: [
-          {
-            id: 1,
-            type: 'DEPOSIT',
-            sourceAccountId: 1,
-            amount: 3200.00,
-            description: 'Salaire Novembre',
-            status: 'COMPLETED',
-            createdAt: new Date('2024-12-01')
-          },
-          {
-            id: 2,
-            type: 'WITHDRAWAL',
-            sourceAccountId: 1,
-            amount: 100.00,
-            description: 'Retrait ATM',
-            status: 'COMPLETED',
-            createdAt: new Date('2024-12-02')
-          },
-          {
-            id: 3,
-            type: 'WITHDRAWAL',
-            sourceAccountId: 1,
-            amount: 85.40,
-            description: 'Supermarché Carrefour',
-            status: 'COMPLETED',
-            createdAt: new Date('2024-12-03')
-          }
-        ],
-        totalBalance: 24170.50
-      };
-      return of(mockDashboard).pipe(delay(1000));
-    }
-    return this.api.get<Dashboard>(`/api/dashboard/${clientId}`);
+    return this.http.get<Dashboard>(`${this.ENDPOINT}/${clientId}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère le dashboard enrichi avec plus de détails
+   */
+  getEnrichedDashboard(clientId: number): Observable<EnrichedDashboard> {
+    return this.http.get<EnrichedDashboard>(`${this.ENDPOINT}/${clientId}/enriched`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère le relevé de compte
+   */
   getAccountStatement(accountId: number, from: string, to: string): Observable<Statement> {
-    return this.api.get<Statement>(`/api/statements/${accountId}`, { from, to });
+    const params = new HttpParams()
+      .set('from', from)
+      .set('to', to);
+
+    return this.http.get<Statement>(`${this.ENDPOINT}/statements/${accountId}`, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère les statistiques mensuelles
+   */
+  getMonthlyStats(clientId: number, year: number, month: number): Observable<{
+    income: number;
+    expenses: number;
+    savings: number;
+    transactionCount: number;
+  }> {
+    return this.http.get<{
+      income: number;
+      expenses: number;
+      savings: number;
+      transactionCount: number;
+    }>(`${this.ENDPOINT}/${clientId}/stats/${year}/${month}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Gère les erreurs HTTP
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Une erreur est survenue';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Erreur: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || `Erreur ${error.status}: ${error.statusText}`;
+    }
+
+    console.error('Dashboard service error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

@@ -41,7 +41,7 @@ export default function TransferConfirmationScreen() {
     setTimeout(() => {
       setIsProcessing(false);
       router.replace({
-        pathname: '/transfer-success',
+        pathname: '/(screens)/transfer-success',
         params: {
           amount: transferDetails.amount.toString(),
           beneficiary: transferDetails.beneficiary,

@@ -175,7 +175,7 @@ export default function LoginIOSScreen() {
             <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
               Nouveau sur WillBank ? 
             </Text>
-            <Pressable onPress={() => router.push('/register')}>
+            <Pressable onPress={() => router.push('/(auth)/register')}>
               <Text style={[styles.linkText, { color: colors.primary }]}> Créer un compte</Text>
             </Pressable>
           </View>
