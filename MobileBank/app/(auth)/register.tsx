@@ -41,6 +41,30 @@ export default function RegisterScreen() {
       return;
     }
 
+    // Validation du mot de passe : au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Le mot de passe doit contenir au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial (@$!%*?&)');
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial (@$!%*?&)');
+      return;
+    }
+    
+    // Validation du CIN : 8-20 caractères alphanumériques en majuscules
+    const cinRegex = /^[A-Z0-9]{8,20}$/;
+    if (!cinRegex.test(cin.toUpperCase())) {
+      setError('Le CIN doit contenir 8 à 20 caractères alphanumériques');
+      Alert.alert('Erreur', 'Le CIN doit contenir 8 à 20 caractères alphanumériques');
+      return;
+    }
+    
+    // Validation du téléphone : 10-15 chiffres (peut commencer par +)
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      setError('Le numéro de téléphone doit contenir 10 à 15 chiffres');
+      Alert.alert('Erreur', 'Le numéro de téléphone doit contenir 10 à 15 chiffres');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -49,10 +73,10 @@ export default function RegisterScreen() {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim().toLowerCase(),
-        phoneNumber: phone.trim(),
+        phone: phone.trim().replace(/\s/g, ''),
         password,
         address: address.trim(),
-        cin: cin.trim(),
+        cin: cin.trim().toUpperCase(),
       });
       
       // Afficher un message de succès
@@ -71,7 +95,22 @@ export default function RegisterScreen() {
       );
     } catch (err: any) {
       console.error('Registration error:', err);
-      const errorMessage = err.response?.data?.message || 'Une erreur est survenue lors de la création du compte';
+      console.error('Error response:', err.response?.data);
+      
+      let errorMessage = 'Une erreur est survenue lors de la création du compte';
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.errors) {
+          // Validation errors
+          const errors = Object.values(err.response.data.errors).join('\n');
+          errorMessage = errors;
+        }
+      }
+      
       setError(errorMessage);
       Alert.alert('Erreur de création de compte', errorMessage);
     } finally {

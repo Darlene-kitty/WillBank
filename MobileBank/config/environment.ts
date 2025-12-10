@@ -16,10 +16,12 @@ const getDevHost = () => {
   if (Platform.OS === 'web') {
     return 'localhost';
   } else if (Platform.OS === 'android') {
-    return '10.0.2.2';
+    // Si tu testes sur un émulateur, utilise 10.0.2.2
+    // Si tu testes sur un appareil physique via LAN, utilise l'IP réelle
+    return '192.168.43.26'; // Modifie cette IP selon ton réseau
   } else {
     // iOS or other platforms
-    return 'localhost';
+    return '192.168.43.26'; // Modifie cette IP selon ton réseau
   }
 };
 

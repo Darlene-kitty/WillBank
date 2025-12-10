@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView, Alert } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { PremiumCard, PremiumIcon, PremiumDivider } from '@/components/shared';
@@ -10,6 +11,7 @@ import { PremiumCard, PremiumIcon, PremiumDivider } from '@/components/shared';
 export default function AccountSettingsScreen() {
   const router = useRouter();
   const { colors, toggleTheme, colorScheme } = useTheme();
+  const { logout } = useAuthContext();
   const isDark = colorScheme === 'dark';
 
   const settingsSections = [
@@ -201,7 +203,14 @@ export default function AccountSettingsScreen() {
             ]}
             onPress={() => Alert.alert('Déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', [
               { text: 'Annuler', style: 'cancel' },
-              { text: 'Déconnexion', style: 'destructive', onPress: () => router.replace('/(auth)/login' as any) }
+              { 
+                text: 'Déconnexion', 
+                style: 'destructive', 
+                onPress: async () => {
+                  await logout();
+                  router.replace('/(auth)/login' as any);
+                }
+              }
             ])}
           >
             <Ionicons name="log-out-outline" size={20} color="#FF3B30" />

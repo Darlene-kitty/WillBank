@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, clientService, LoginResponse, ClientProfile } from '@/services';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -107,17 +107,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await authService.register(data);
       
       // Store tokens and authentication info
-      await AsyncStorage.setItem('accessToken', response.access_token);
-      await AsyncStorage.setItem('refreshToken', response.refresh_token);
-      await AsyncStorage.setItem('clientId', response.clientId.toString());
+      await AsyncStorage.setItem('accessToken', response.accessToken);
+      await AsyncStorage.setItem('refreshToken', response.refreshToken);
+      await AsyncStorage.setItem('clientId', response.client.id.toString());
       await AsyncStorage.setItem('client', JSON.stringify(response.client));
       
       // Update state
       setIsAuthenticated(true);
-      setClientId(response.clientId);
+      setClientId(response.client.id);
       setClient(response.client);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      console.error('Error response:', error.response?.data);
       throw error;
     } finally {
       setIsLoading(false);
