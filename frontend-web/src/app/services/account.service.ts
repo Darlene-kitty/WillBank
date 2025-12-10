@@ -9,7 +9,8 @@ import { Account, CreateAccountRequest } from '../models/account.model';
   providedIn: 'root'
 })
 export class AccountService {
-  private readonly ENDPOINT = `${environment.apiUrl}/api/accounts`;
+  // Utilise le service dédié aux comptes (port 8082)
+  private readonly ENDPOINT = `${environment.accountServiceUrl}/api/accounts`;
 
   constructor(private http: HttpClient) {}
 

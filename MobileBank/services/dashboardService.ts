@@ -1,34 +1,78 @@
-import api from './api';
-import { BankAccount } from './accountService';
-import { ClientProfile } from './clientService';
-import { Transaction } from './transactionService';
+import { dashboardApi } from './api';
+import { API_CONFIG } from '@/config/environment';
+import { AccountDTO } from './accountService';
+import { ClientDTO } from './clientService';
+import { TransactionDTO } from './transactionService';
 
+// Types
 export interface DashboardResponse {
-  client: ClientProfile;
-  accounts: BankAccount[];
-  recentTransactions: Transaction[];
+  client: ClientDTO;
+  accounts: AccountDTO[];
+  recentTransactions: TransactionDTO[];
+}
+
+export interface StatementResponse {
+  account: AccountDTO;
+  startDate: string;
+  endDate: string;
+  transactions: TransactionDTO[];
+}
+
+// Types enrichis calculés côté client
+export interface EnrichedDashboardResponse extends DashboardResponse {
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpenses: number;
 }
 
-export interface StatementResponse {
-  account: BankAccount;
-  transactions: Transaction[];
-  startDate: string;
-  endDate: string;
+export interface EnrichedStatementResponse extends StatementResponse {
   totalCredits: number;
   totalDebits: number;
   balance: number;
 }
+
+const ENDPOINTS = API_CONFIG.DASHBOARD_SERVICE.ENDPOINTS;
 
 export const dashboardService = {
   /**
    * Récupération du dashboard complet d'un client
    */
   getDashboard: async (clientId: number): Promise<DashboardResponse> => {
-    const response = await api.get(`/api/dashboard/${clientId}`);
+    const response = await dashboardApi.get<DashboardResponse>(ENDPOINTS.DASHBOARD(clientId));
     return response.data;
+  },
+
+  /**
+   * Récupération du dashboard avec calculs enrichis
+   */
+  getEnrichedDashboard: async (clientId: number): Promise<EnrichedDashboardResponse> => {
+    const dashboard = await dashboardService.getDashboard(clientId);
+    
+    // Calcul du solde total
+    const totalBalance = dashboard.accounts.reduce((sum, account) => sum + account.balance, 0);
+    
+    // Calcul des revenus et dépenses du mois en cours
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    
+    const monthlyTransactions = dashboard.recentTransactions.filter(
+      t => t.createdAt && t.createdAt >= startOfMonth
+    );
+    
+    const monthlyIncome = monthlyTransactions
+      .filter(t => t.type === 'DEPOSIT')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const monthlyExpenses = monthlyTransactions
+      .filter(t => t.type === 'WITHDRAWAL' || t.type === 'TRANSFER')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    return {
+      ...dashboard,
+      totalBalance,
+      monthlyIncome,
+      monthlyExpenses,
+    };
   },
 
   /**
@@ -36,32 +80,40 @@ export const dashboardService = {
    */
   getAccountStatement: async (
     accountId: number,
-    from: string,
-    to: string
+    startDate: string,
+    endDate: string
   ): Promise<StatementResponse> => {
-    const response = await api.get(`/api/statements/${accountId}`, {
-      params: { from, to },
+    const response = await dashboardApi.get<StatementResponse>(ENDPOINTS.STATEMENT(accountId), {
+      params: { startDate, endDate },
     });
     return response.data;
   },
 
   /**
-   * Récupération des statistiques mensuelles
+   * Récupération d'un relevé de compte avec calculs enrichis
    */
-  getMonthlyStats: async (clientId: number, year: number, month: number) => {
-    const response = await api.get(`/api/dashboard/${clientId}/stats`, {
-      params: { year, month },
-    });
-    return response.data;
-  },
-
-  /**
-   * Récupération des catégories de dépenses
-   */
-  getExpenseCategories: async (clientId: number, from: string, to: string) => {
-    const response = await api.get(`/api/dashboard/${clientId}/categories`, {
-      params: { from, to },
-    });
-    return response.data;
+  getEnrichedStatement: async (
+    accountId: number,
+    startDate: string,
+    endDate: string
+  ): Promise<EnrichedStatementResponse> => {
+    const statement = await dashboardService.getAccountStatement(accountId, startDate, endDate);
+    
+    const totalCredits = statement.transactions
+      .filter(t => t.type === 'DEPOSIT')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const totalDebits = statement.transactions
+      .filter(t => t.type === 'WITHDRAWAL' || t.type === 'TRANSFER')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    return {
+      ...statement,
+      totalCredits,
+      totalDebits,
+      balance: statement.account.balance,
+    };
   },
 };
+
+export default dashboardService;

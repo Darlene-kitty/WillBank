@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { ApiService } from './api.service';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { Transaction, TransactionRequest } from '../models/transaction.model';
 import { environment } from '../../environments/environment';
 
@@ -8,77 +9,125 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class TransactionService {
-  private endpoint = '/api/transactions';
-  private useMockData = !environment.production;
+  // Utilise le service dédié aux transactions (port 8083)
+  private readonly ENDPOINT = `${environment.transactionServiceUrl}/api/transactions`;
 
-  private mockTransactions: Transaction[] = [
-    {
-      id: 1,
-      type: 'DEPOSIT',
-      sourceAccountId: 1,
-      amount: 3200.00,
-      description: 'Salaire Novembre',
-      status: 'COMPLETED',
-      createdAt: new Date('2024-12-01')
-    },
-    {
-      id: 2,
-      type: 'WITHDRAWAL',
-      sourceAccountId: 1,
-      amount: 100.00,
-      description: 'Retrait ATM',
-      status: 'COMPLETED',
-      createdAt: new Date('2024-12-02')
-    },
-    {
-      id: 3,
-      type: 'WITHDRAWAL',
-      sourceAccountId: 1,
-      amount: 85.40,
-      description: 'Supermarché Carrefour',
-      status: 'COMPLETED',
-      createdAt: new Date('2024-12-03')
-    }
-  ];
+  constructor(private http: HttpClient) {}
 
-  constructor(private api: ApiService) {}
-
+  /**
+   * Récupère toutes les transactions (admin)
+   */
   getAllTransactions(): Observable<Transaction[]> {
-    if (this.useMockData) {
-      return of(this.mockTransactions).pipe(delay(800));
-    }
-    return this.api.get<Transaction[]>(this.endpoint);
+    return this.http.get<Transaction[]>(this.ENDPOINT).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère une transaction par son ID
+   */
   getTransactionById(id: number): Observable<Transaction> {
-    if (this.useMockData) {
-      const transaction = this.mockTransactions.find(t => t.id === id);
-      return of(transaction!).pipe(delay(500));
-    }
-    return this.api.get<Transaction>(`${this.endpoint}/${id}`);
+    return this.http.get<Transaction>(`${this.ENDPOINT}/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère une transaction par sa référence
+   */
+  getTransactionByReference(reference: string): Observable<Transaction> {
+    return this.http.get<Transaction>(`${this.ENDPOINT}/reference/${reference}`).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Récupère toutes les transactions d'un compte
+   */
   getTransactionsByAccountId(accountId: number): Observable<Transaction[]> {
-    if (this.useMockData) {
-      const transactions = this.mockTransactions.filter(
-        t => t.sourceAccountId === accountId || t.destinationAccountId === accountId
-      );
-      return of(transactions).pipe(delay(500));
-    }
-    return this.api.get<Transaction[]>(`${this.endpoint}/account/${accountId}`);
+    return this.http.get<Transaction[]>(`${this.ENDPOINT}/account/${accountId}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Récupère les transactions d'un compte par plage de dates
+   */
+  getTransactionsByDateRange(accountId: number, startDate: string, endDate: string): Observable<Transaction[]> {
+    const params = new HttpParams()
+      .set('startDate', startDate)
+      .set('endDate', endDate);
+    return this.http.get<Transaction[]>(`${this.ENDPOINT}/account/${accountId}/range`, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Crée une nouvelle transaction
+   */
   createTransaction(transaction: TransactionRequest): Observable<Transaction> {
-    if (this.useMockData) {
-      const newTransaction: Transaction = {
-        ...transaction,
-        id: Math.max(...this.mockTransactions.map(t => t.id || 0)) + 1,
-        status: 'COMPLETED',
-        createdAt: new Date()
-      };
-      this.mockTransactions.unshift(newTransaction);
-      return of(newTransaction).pipe(delay(1000));
+    return this.http.post<Transaction>(this.ENDPOINT, transaction).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Crée un virement
+   */
+  createTransfer(
+    sourceAccountId: number,
+    destinationAccountId: number | undefined,
+    amount: number,
+    description: string,
+    destinationIban?: string
+  ): Observable<Transaction> {
+    return this.createTransaction({
+      type: 'TRANSFER',
+      sourceAccountId,
+      destinationAccountId,
+      destinationIban,
+      amount,
+      description
+    });
+  }
+
+  /**
+   * Crée un dépôt
+   */
+  createDeposit(accountId: number, amount: number, description: string): Observable<Transaction> {
+    return this.createTransaction({
+      type: 'DEPOSIT',
+      sourceAccountId: accountId,
+      amount,
+      description
+    });
+  }
+
+  /**
+   * Crée un retrait
+   */
+  createWithdrawal(accountId: number, amount: number, description: string): Observable<Transaction> {
+    return this.createTransaction({
+      type: 'WITHDRAWAL',
+      sourceAccountId: accountId,
+      amount,
+      description
+    });
+  }
+
+  /**
+   * Gère les erreurs HTTP
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Une erreur est survenue';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Erreur: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || `Erreur ${error.status}: ${error.statusText}`;
     }
-    return this.api.post<Transaction>(this.endpoint, transaction);
+
+    console.error('Transaction service error:', errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

@@ -9,7 +9,8 @@ import { Client } from '../models/client.model';
   providedIn: 'root'
 })
 export class ClientService {
-  private readonly ENDPOINT = `${environment.apiUrl}/api/clients`;
+  // Utilise le service dédié aux clients (port 8081)
+  private readonly ENDPOINT = `${environment.clientServiceUrl}/api/clients`;
 
   constructor(private http: HttpClient) {}
 

@@ -1,6 +1,8 @@
-import api from './api';
+import { notificationApi } from './api';
+import { API_CONFIG } from '@/config/environment';
 
-export interface Notification {
+// Types
+export interface NotificationDTO {
   id: number;
   type: 'EMAIL' | 'SMS' | 'PUSH' | 'IN_APP';
   recipient: string;
@@ -31,50 +33,55 @@ export interface NotificationPreferences {
   quietHoursEnd: string;
 }
 
+// Alias pour rétrocompatibilité
+export type Notification = NotificationDTO;
+
+const ENDPOINTS = API_CONFIG.NOTIFICATION_SERVICE.ENDPOINTS;
+
 export const notificationService = {
   /**
-   * Récupération des notifications d'un utilisateur
+   * Récupération des notifications d'un utilisateur par email/recipient
    */
-  getNotificationsByRecipient: async (recipient: string): Promise<Notification[]> => {
-    const response = await api.get(`/api/notifications/recipient/${recipient}`);
-    return response.data;
-  },
-
-  /**
-   * Récupération de toutes les notifications (admin only)
-   */
-  getAllNotifications: async (): Promise<Notification[]> => {
-    const response = await api.get('/api/notifications');
-    return response.data;
-  },
-
-  /**
-   * Récupération des préférences de notifications
-   */
-  getPreferences: async (clientId: number): Promise<NotificationPreferences> => {
-    const response = await api.get(`/api/notifications/preferences/${clientId}`);
-    return response.data;
-  },
-
-  /**
-   * Mise à jour des préférences de notifications
-   */
-  updatePreferences: async (
-    clientId: number,
-    preferences: NotificationPreferences
-  ): Promise<NotificationPreferences> => {
-    const response = await api.put(
-      `/api/notifications/preferences/${clientId}`,
-      preferences
+  getNotificationsByRecipient: async (recipient: string): Promise<NotificationDTO[]> => {
+    const response = await notificationApi.get<NotificationDTO[]>(
+      ENDPOINTS.NOTIFICATIONS_BY_RECIPIENT(recipient)
     );
     return response.data;
   },
 
   /**
-   * Envoi d'une notification de test
+   * Récupération de toutes les notifications (admin)
    */
-  sendTestNotification: async (clientId: number): Promise<{ message: string }> => {
-    const response = await api.post('/api/notifications/test', { clientId });
+  getAllNotifications: async (): Promise<NotificationDTO[]> => {
+    const response = await notificationApi.get<NotificationDTO[]>(ENDPOINTS.NOTIFICATIONS);
     return response.data;
   },
+
+  /**
+   * Compte le nombre de notifications non lues
+   * Note: Cette logique est côté client car l'API ne gère pas encore le statut lu/non lu
+   */
+  getUnreadCount: async (recipient: string): Promise<number> => {
+    try {
+      const notifications = await notificationService.getNotificationsByRecipient(recipient);
+      // Pour l'instant, considérer les notifications des dernières 24h comme "non lues"
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      return notifications.filter(n => n.createdAt > oneDayAgo).length;
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      return 0;
+    }
+  },
+
+  /**
+   * Récupération des notifications récentes
+   */
+  getRecentNotifications: async (recipient: string, limit: number = 10): Promise<NotificationDTO[]> => {
+    const notifications = await notificationService.getNotificationsByRecipient(recipient);
+    return notifications
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
+  },
 };
+
+export default notificationService;
