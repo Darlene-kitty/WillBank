@@ -12,7 +12,9 @@ import { Account } from '../../../models/account.model';
         <div class="flex items-start justify-between">
           <div>
             <h3 class="card-title text-base">
-              {{ account.accountType === 'CHECKING' ? 'Compte Courant' : 'Compte Épargne' }}
+              {{ account.accountType === 'CHECKING' ? 'Compte Courant' : 
+                 account.accountType === 'SAVINGS' ? 'Compte Épargne' : 
+                 account.accountType === 'BUSINESS' ? 'Compte Professionnel' : account.accountType }}
             </h3>
             <p class="text-sm text-muted-foreground mt-1">{{ account.accountNumber }}</p>
           </div>
@@ -20,10 +22,10 @@ import { Account } from '../../../models/account.model';
             class="badge"
             [ngClass]="{
               'active': account.status === 'ACTIVE',
-              'inactive': account.status === 'INACTIVE',
-              'blocked': account.status === 'BLOCKED'
+              'suspended': account.status === 'SUSPENDED',
+              'closed': account.status === 'CLOSED'
             }">
-            {{ account.status }}
+            {{ account.status === 'ACTIVE' ? 'Actif' : account.status === 'SUSPENDED' ? 'Suspendu' : account.status === 'CLOSED' ? 'Fermé' : account.status }}
           </span>
         </div>
       </div>

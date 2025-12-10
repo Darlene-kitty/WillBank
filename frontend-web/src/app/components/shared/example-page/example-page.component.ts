@@ -133,8 +133,8 @@ import { Client } from '../../../models/client.model';
                 <span class="badge badge-warning">Warning</span>
                 <span class="badge badge-muted">Muted</span>
                 <span class="badge active">Actif</span>
-                <span class="badge inactive">Inactif</span>
-                <span class="badge blocked">Bloqué</span>
+                <span class="badge suspended">Suspendu</span>
+                <span class="badge closed">Fermé</span>
               </div>
             </div>
           </div>
