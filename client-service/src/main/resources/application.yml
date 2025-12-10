@@ -20,8 +20,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME:test@example.com}
-    password: ${MAIL_PASSWORD:test}
+    username: ${MAIL_USERNAME:joanmelong2005@gmail.com}
+    password: ${MAIL_PASSWORD:wgfo ugic sfqd arit}
     properties:
       mail:
         smtp:
@@ -67,7 +67,7 @@ firebase:
 app:
   name: WillBank
   email:
-    from: ${MAIL_USERNAME:noreply@willbank.com}
-    support: support@willbank.com
+    from: ${MAIL_USERNAME:joanmelong2005@gmail.com}
+    support: joanmelong2005@gmail.com
   frontend:
     url: http://localhost:4200

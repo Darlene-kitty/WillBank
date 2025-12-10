@@ -6,10 +6,22 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   clientId: number | null;
-  client: ClientProfile | null;
-  login: (email: string, password: string) => Promise<LoginResponse>;
+  client: Client | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+}
+
+interface RegisterRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+  address: string;
+  cin: string;
+  fcmToken?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -89,6 +101,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const register = async (data: RegisterRequest): Promise<void> => {
+    setIsLoading(true);
+    try {
+      const response = await authService.register(data);
+      
+      // Store tokens and authentication info
+      await AsyncStorage.setItem('accessToken', response.access_token);
+      await AsyncStorage.setItem('refreshToken', response.refresh_token);
+      await AsyncStorage.setItem('clientId', response.clientId.toString());
+      await AsyncStorage.setItem('client', JSON.stringify(response.client));
+      
+      // Update state
+      setIsAuthenticated(true);
+      setClientId(response.clientId);
+      setClient(response.client);
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -99,6 +134,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         login,
         logout,
         refreshProfile,
+        register,
       }}
     >
       {children}
