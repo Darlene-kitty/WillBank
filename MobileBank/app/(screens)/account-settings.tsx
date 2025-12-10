@@ -48,11 +48,11 @@ export default function AccountSettingsScreen() {
     } else if (item.route) {
       // Navigation vers les pages
       if (item.route === '/profile') {
-        router.push('/profile-settings' as any);
+        router.push('/(screens)/profile-settings' as any);
       } else if (item.route === '/accounts') {
-        router.push('/account-config?accountId=1' as any);
+        router.push('/(screens)/account-config?accountId=1' as any);
       } else if (item.route === '/notification-settings') {
-        router.push('/notification-settings' as any);
+        router.push('/(screens)/notification-settings' as any);
       } else {
         Alert.alert('Navigation', `Vers ${item.label}`);
       }
@@ -110,7 +110,7 @@ export default function AccountSettingsScreen() {
               </Text>
             </View>
             <Pressable 
-              onPress={() => router.push('/profile-settings' as any)}
+              onPress={() => router.push('/(screens)/profile-settings' as any)}
               style={styles.editButton}
             >
               <Ionicons name="create-outline" size={20} color={colors.primary} />

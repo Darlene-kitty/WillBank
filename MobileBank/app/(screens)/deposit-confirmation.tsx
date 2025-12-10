@@ -66,7 +66,7 @@ export default function DepositConfirmationScreen() {
     setTimeout(() => {
       setIsProcessing(false);
       router.replace({
-        pathname: '/deposit-success',
+        pathname: '/(screens)/deposit-success',
         params: {
           amount: depositDetails.amount.toString(),
           account: depositDetails.account,

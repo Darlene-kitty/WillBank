@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Configuration de base
 const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:8080'  // Development
+  ? 'http://10.0.2.2:8081'  // Development (Android emulator) - utilisez localhost:8080 pour iOS
   : 'https://api.willbank.com'; // Production
 
 // Création de l'instance Axios

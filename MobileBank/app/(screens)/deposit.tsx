@@ -32,7 +32,7 @@ export default function DepositScreen() {
       return;
     }
     router.push({
-      pathname: '/deposit-confirmation',
+      pathname: '/(screens)/deposit-confirmation',
       params: {
         amount,
         account: selectedAccount,
