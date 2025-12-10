@@ -62,7 +62,13 @@ export class AccountService {
   /**
    * Crée un nouveau compte
    */
-  createAccount(request: CreateAccountRequest): Observable<Account> {
+  createAccount(account: Account): Observable<Account> {
+    const request = {
+      clientId: account.clientId,
+      accountType: account.accountType,
+      balance: account.balance || 0,
+      status: account.status || 'ACTIVE'
+    };
     return this.http.post<Account>(this.ENDPOINT, request).pipe(
       catchError(this.handleError)
     );

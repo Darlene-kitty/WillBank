@@ -151,11 +151,11 @@
     @apply bg-secondary/10 text-secondary;
   }
 
-  .inactive {
+  .suspended {
     @apply bg-muted text-muted-foreground;
   }
 
-  .blocked {
+  .closed {
     @apply bg-destructive/10 text-destructive;
   }
 

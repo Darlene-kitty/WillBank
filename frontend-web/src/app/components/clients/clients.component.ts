@@ -27,7 +27,12 @@ export class ClientsComponent implements OnInit {
   totalPages = 1;
   
   // Statistiques
-  stats = {
+  stats: {
+    totalClients: number;
+    activeClients: number;
+    newThisMonth: number;
+    totalAccounts: number;
+  } = {
     totalClients: 0,
     activeClients: 0,
     newThisMonth: 0,
