@@ -110,3 +110,11 @@ mobile-bank/android
 application-local.yml
 application-dev.yml
 *.pid
+
+# Firebase Service Account Keys (sensitive)
+**/serviceAccountKey.json
+serviceAccountKey.json
+
+# Environment variables with sensitive data
+**/.env.local
+**/.env.*.local
