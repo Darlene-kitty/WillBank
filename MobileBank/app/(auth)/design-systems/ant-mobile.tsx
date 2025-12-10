@@ -184,7 +184,7 @@ export default function LoginAntScreen() {
             <Text style={[styles.registerText, { color: colors.textSecondary }]}>
               还没有账号？
             </Text>
-            <Pressable onPress={() => router.push('/register')}>
+            <Pressable onPress={() => router.push('/(auth)/register')}>
               <Text style={[styles.registerLink, { color: colors.primary }]}>
                 立即注册 / Créer un compte
               </Text>

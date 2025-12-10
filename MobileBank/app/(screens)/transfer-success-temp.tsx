@@ -45,7 +45,7 @@ export default function DepositSuccessScreen() {
   };
 
   const handleViewDetails = () => {
-    router.push('/transaction-history' as any);
+    router.push('/(screens)/transaction-history' as any);
   };
 
   return (

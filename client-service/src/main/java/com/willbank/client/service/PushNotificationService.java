@@ -1,5 +1,6 @@
 package com.willbank.client.service;
 
+import com.google.firebase.FirebaseApp;
 import com.google.firebase.messaging.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,10 +14,19 @@ import java.util.Map;
 @Slf4j
 public class PushNotificationService {
     
+    private boolean isFirebaseInitialized() {
+        return !FirebaseApp.getApps().isEmpty();
+    }
+    
     @Async
     public void sendWelcomePushNotification(String fcmToken, String firstName) {
         if (fcmToken == null || fcmToken.isBlank()) {
             log.debug("No FCM token provided, skipping push notification");
+            return;
+        }
+        
+        if (!isFirebaseInitialized()) {
+            log.debug("Firebase not initialized, skipping push notification");
             return;
         }
         
@@ -62,6 +72,11 @@ public class PushNotificationService {
             return;
         }
         
+        if (!isFirebaseInitialized()) {
+            log.debug("Firebase not initialized, skipping push notification");
+            return;
+        }
+        
         try {
             log.info("Sending first login push notification to token: {}", maskToken(fcmToken));
             
@@ -104,6 +119,11 @@ public class PushNotificationService {
             return;
         }
         
+        if (!isFirebaseInitialized()) {
+            log.debug("Firebase not initialized, skipping push notification");
+            return;
+        }
+        
         try {
             log.info("Sending password changed push notification to token: {}", maskToken(fcmToken));
             
@@ -143,6 +163,11 @@ public class PushNotificationService {
     public void sendCustomPushNotification(String fcmToken, String title, String body, Map<String, String> data) {
         if (fcmToken == null || fcmToken.isBlank()) {
             log.debug("No FCM token provided, skipping push notification");
+            return;
+        }
+        
+        if (!isFirebaseInitialized()) {
+            log.debug("Firebase not initialized, skipping push notification");
             return;
         }
         
