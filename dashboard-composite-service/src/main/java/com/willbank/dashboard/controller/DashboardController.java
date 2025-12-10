@@ -31,7 +31,7 @@ public class DashboardController {
         @ApiResponse(responseCode = "200", description = "Dashboard retrieved successfully"),
         @ApiResponse(responseCode = "404", description = "Client not found")
     })
-    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable Long clientId) {
+    public ResponseEntity<DashboardResponse> getDashboard(@PathVariable("clientId") Long clientId) {
         DashboardResponse dashboard = dashboardService.getDashboard(clientId);
         return ResponseEntity.ok(dashboard);
     }
@@ -46,7 +46,7 @@ public class DashboardController {
         @ApiResponse(responseCode = "404", description = "Account not found")
     })
     public ResponseEntity<StatementResponse> getAccountStatement(
-            @PathVariable Long accountId,
+            @PathVariable("accountId") Long accountId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
         StatementResponse statement = dashboardService.getAccountStatement(accountId, from, to);

@@ -49,7 +49,7 @@ export default function DepositSuccessScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Success Header */}
       <View style={styles.header}>
         <Pressable 
@@ -201,7 +201,7 @@ export default function DepositSuccessScreen() {
           </Pressable>
         </Animated.View>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
+    paddingTop: 50,
     paddingBottom: 10,
   },
   closeButton: {

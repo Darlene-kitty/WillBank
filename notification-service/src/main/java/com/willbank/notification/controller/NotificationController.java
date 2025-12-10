@@ -20,7 +20,7 @@ public class NotificationController {
     
     @GetMapping("/recipient/{recipient}")
     @Operation(summary = "Get notifications by recipient", description = "Retrieves all notifications for a specific recipient")
-    public ResponseEntity<List<Notification>> getNotificationsByRecipient(@PathVariable String recipient) {
+    public ResponseEntity<List<Notification>> getNotificationsByRecipient(@PathVariable("recipient") String recipient) {
         List<Notification> notifications = notificationService.getNotificationsByRecipient(recipient);
         return ResponseEntity.ok(notifications);
     }
