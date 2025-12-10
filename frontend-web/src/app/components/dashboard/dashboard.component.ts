@@ -128,8 +128,8 @@ export class DashboardComponent implements OnInit {
   }
 
   loadDashboard(): void {
-    const user = this.authService.getCurrentUser();
-    if (!user) return;
+    const user = this.authService.getCurrentUserValue();
+    if (!user || !user.id) return;
 
     this.loading = true;
     this.dashboardService.getClientDashboard(user.id).subscribe({

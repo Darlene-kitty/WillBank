@@ -81,7 +81,7 @@ export class AccountsComponent implements OnInit {
   calculateStats(): void {
     this.stats.totalAccounts = this.accounts.length;
     this.stats.activeAccounts = this.accounts.filter(a => a.status === 'ACTIVE').length;
-    this.stats.blockedAccounts = this.accounts.filter(a => a.status === 'BLOCKED').length;
+    this.stats.blockedAccounts = this.accounts.filter(a => a.status === 'SUSPENDED' || a.status === 'CLOSED').length;
     this.stats.totalBalance = this.accounts.reduce((sum, a) => sum + (a.balance || 0), 0);
   }
 
@@ -299,4 +299,7 @@ export class AccountsComponent implements OnInit {
 
   // Expose Math for template
   Math = Math;
+  
+  // Current date for template
+  currentDate = new Date();
 }

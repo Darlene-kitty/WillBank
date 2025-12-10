@@ -41,21 +41,21 @@ public class TransactionController {
         @ApiResponse(responseCode = "200", description = "Transaction found"),
         @ApiResponse(responseCode = "404", description = "Transaction not found")
     })
-    public ResponseEntity<TransactionDTO> getTransactionById(@PathVariable Long id) {
+    public ResponseEntity<TransactionDTO> getTransactionById(@PathVariable("id") Long id) {
         TransactionDTO transaction = transactionService.getTransactionById(id);
         return ResponseEntity.ok(transaction);
     }
     
     @GetMapping("/reference/{reference}")
     @Operation(summary = "Get transaction by reference", description = "Retrieves a transaction by its reference number")
-    public ResponseEntity<TransactionDTO> getTransactionByReference(@PathVariable String reference) {
+    public ResponseEntity<TransactionDTO> getTransactionByReference(@PathVariable("reference") String reference) {
         TransactionDTO transaction = transactionService.getTransactionByReference(reference);
         return ResponseEntity.ok(transaction);
     }
     
     @GetMapping("/account/{accountId}")
     @Operation(summary = "Get transactions by account ID", description = "Retrieves all transactions for a specific account")
-    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable Long accountId) {
+    public ResponseEntity<List<TransactionDTO>> getTransactionsByAccountId(@PathVariable("accountId") Long accountId) {
         List<TransactionDTO> transactions = transactionService.getTransactionsByAccountId(accountId);
         return ResponseEntity.ok(transactions);
     }
@@ -63,7 +63,7 @@ public class TransactionController {
     @GetMapping("/account/{accountId}/range")
     @Operation(summary = "Get transactions by date range", description = "Retrieves transactions for an account within a date range")
     public ResponseEntity<List<TransactionDTO>> getTransactionsByDateRange(
-            @PathVariable Long accountId,
+            @PathVariable("accountId") Long accountId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate) {
         List<TransactionDTO> transactions = transactionService.getTransactionsByAccountIdAndDateRange(accountId, startDate, endDate);

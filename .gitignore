@@ -63,7 +63,53 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
+# Mobile dependencies
+# dependencies
+mobile-bank/node_modules/
+
+# Expo
+mobile-bank/.expo/
+mobile-bank/dist/
+mobile-bank/web-build/
+mobile-bank/expo-env.d.ts
+
+# Native
+mobile-bank/.kotlin/
+mobile-bank/*.orig.*
+mobile-bank/*.jks
+mobile-bank/*.p8
+mobile-bank/*.p12
+mobile-bank/*.key
+mobile-bank/*.mobileprovision
+
+# Metro
+mobile-bank/.metro-health-check*
+
+# debug
+mobile-bank/npm-debug.*
+mobile-bank/yarn-debug.*
+mobile-bank/yarn-error.*
+
+# macOS
+mobile-bank/.DS_Store
+mobile-bank/*.pem
+
+# local env files
+mobile-bank/.env*.local
+
+# typescript
+mobile-bank/*.tsbuildinfo
+
+mobile-bank/app-example
+
+# generated native folders
+mobile-bank/ios
+mobile-bank/android
+
 # Application specific
 application-local.yml
 application-dev.yml
 *.pid
+
+client-service/src/main/resources/serviceAccountKey.json
+**/serviceAccountKey.json
