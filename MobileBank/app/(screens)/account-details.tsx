@@ -65,7 +65,7 @@ export default function AccountDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Premium Gradient Header */}
       <LinearGradient
         colors={['#0066FF', '#0052CC']}
@@ -192,11 +192,7 @@ export default function AccountDetailsScreen() {
                   styles.actionBtn,
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
-<<<<<<< HEAD
-                onPress={() => router.push('/new-transfer' as any)}
-=======
                 onPress={() => router.push('/(screens)/new-transfer' as any)}
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               >
                 <LinearGradient
                   colors={['#0066FF', '#0052CC']}
@@ -214,11 +210,8 @@ export default function AccountDetailsScreen() {
                   styles.actionBtn,
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
-<<<<<<< HEAD
-                onPress={() => router.push('/deposit' as any)}
-=======
                 onPress={() => router.push('/(screens)/deposit' as any)}
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
+                onPress={() => router.push('/deposit' as any)}
               >
                 <LinearGradient
                   colors={['#34C759', '#28A745']}
@@ -272,11 +265,8 @@ export default function AccountDetailsScreen() {
                   styles.actionBtn,
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
-<<<<<<< HEAD
-                onPress={() => router.push('/deposit' as any)}
-=======
                 onPress={() => router.push('/(screens)/deposit' as any)}
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
+                onPress={() => router.push('/deposit' as any)}
               >
                 <LinearGradient
                   colors={['#34C759', '#28A745']}
@@ -551,11 +541,7 @@ export default function AccountDetailsScreen() {
             <Text style={[styles.cardTitle, { color: colors.text }]}>
               Transactions Récentes
             </Text>
-<<<<<<< HEAD
-            <Pressable onPress={() => router.push('/transaction-history' as any)}>
-=======
             <Pressable onPress={() => router.push('/(screens)/transaction-history' as any)}>
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               <Text style={styles.viewAllText}>Tout voir →</Text>
             </Pressable>
           </View>
@@ -581,11 +567,7 @@ export default function AccountDetailsScreen() {
         >
           <PremiumButton
             title="Voir l'historique complet"
-<<<<<<< HEAD
-            onPress={() => router.push('/transaction-history' as any)}
-=======
             onPress={() => router.push('/(screens)/transaction-history' as any)}
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
             icon="receipt"
             variant="primary"
           />
@@ -593,7 +575,7 @@ export default function AccountDetailsScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -602,8 +584,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerGradient: {
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingTop: 50,
+    paddingBottom: 16,
     paddingHorizontal: 20,
   },
   header: {

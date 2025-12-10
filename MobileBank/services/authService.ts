@@ -1,6 +1,7 @@
 import { clientApi } from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_CONFIG, APP_CONFIG } from '@/config/environment';
+import { firebaseService } from './firebaseService';
 
 // Types
 export interface LoginRequest {
@@ -59,6 +60,15 @@ export const authService = {
    * Connexion utilisateur
    */
   login: async (email: string, password: string, fcmToken?: string): Promise<LoginResponse> => {
+    // Si pas de token fourni, essayer de le récupérer
+    if (!fcmToken) {
+      try {
+        fcmToken = await firebaseService.getFCMToken();
+      } catch (error) {
+        console.warn('Could not get FCM token for login:', error);
+      }
+    }
+    
     const response = await clientApi.post<LoginResponse>(ENDPOINTS.LOGIN, { 
       email, 
       password,
@@ -81,6 +91,17 @@ export const authService = {
    * Inscription utilisateur
    */
   register: async (data: RegisterRequest): Promise<LoginResponse> => {
+    // Si pas de token fourni, essayer de le récupérer ou utiliser le token par défaut
+    if (!data.fcmToken) {
+      try {
+        data.fcmToken = await firebaseService.getFCMToken();
+      } catch (error) {
+        console.warn('Could not get FCM token for registration:', error);
+        // Utiliser le token par défaut
+        data.fcmToken = '6w088Q-tg6lOvFDlIM81GxI7oFXGZvczzNs2O8aHYA8';
+      }
+    }
+    
     const response = await clientApi.post<LoginResponse>(ENDPOINTS.REGISTER, data);
     
     const { accessToken, refreshToken, client } = response.data;

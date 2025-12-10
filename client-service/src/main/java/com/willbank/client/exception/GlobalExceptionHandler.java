@@ -101,9 +101,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
         log.error("Unexpected error: {}", ex.getMessage(), ex);
+        // Afficher le message réel pour le débogage
+        String message = ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred";
         ErrorResponse error = new ErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "An unexpected error occurred",
+            message,
             LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);

@@ -1,21 +1,121 @@
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert, ActivityIndicator } from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
   const { colors } = useTheme();
-  const [fullName, setFullName] = useState('');
+  const { register } = useAuthContext();
+  
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
+  const [cin, setCin] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleRegister = () => {
-    // Simulate registration
-    router.replace('/(tabs)/' as any);
+  const handleRegister = async () => {
+    // Validation
+    if (!firstName || !lastName || !email || !phone || !password || !address || !cin) {
+      setError('Veuillez remplir tous les champs');
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setError('Email invalide');
+      Alert.alert('Erreur', 'Email invalide');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Le mot de passe doit contenir au moins 6 caractères');
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      return;
+    }
+
+    // Validation du mot de passe : au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Le mot de passe doit contenir au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial (@$!%*?&)');
+      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 8 caractères avec majuscule, minuscule, chiffre et caractère spécial (@$!%*?&)');
+      return;
+    }
+    
+    // Validation du CIN : 8-20 caractères alphanumériques en majuscules
+    const cinRegex = /^[A-Z0-9]{8,20}$/;
+    if (!cinRegex.test(cin.toUpperCase())) {
+      setError('Le CIN doit contenir 8 à 20 caractères alphanumériques');
+      Alert.alert('Erreur', 'Le CIN doit contenir 8 à 20 caractères alphanumériques');
+      return;
+    }
+    
+    // Validation du téléphone : 10-15 chiffres (peut commencer par +)
+    const phoneRegex = /^\+?[0-9]{10,15}$/;
+    if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+      setError('Le numéro de téléphone doit contenir 10 à 15 chiffres');
+      Alert.alert('Erreur', 'Le numéro de téléphone doit contenir 10 à 15 chiffres');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      await register({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim().toLowerCase(),
+        phone: phone.trim().replace(/\s/g, ''),
+        password,
+        address: address.trim(),
+        cin: cin.trim().toUpperCase(),
+      });
+      
+      // Afficher un message de succès
+      Alert.alert(
+        'Compte créé avec succès !',
+        'Bienvenue chez WillBank. Vous allez recevoir un email de confirmation et une notification push.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Rediriger vers le dashboard
+              router.replace('/(tabs)/' as any);
+            }
+          }
+        ]
+      );
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      console.error('Error response:', err.response?.data);
+      
+      let errorMessage = 'Une erreur est survenue lors de la création du compte';
+      
+      if (err.response?.data) {
+        if (typeof err.response.data === 'string') {
+          errorMessage = err.response.data;
+        } else if (err.response.data.message) {
+          errorMessage = err.response.data.message;
+        } else if (err.response.data.errors) {
+          // Validation errors
+          const errors = Object.values(err.response.data.errors).join('\n');
+          errorMessage = errors;
+        }
+      }
+      
+      setError(errorMessage);
+      Alert.alert('Erreur de création de compte', errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -51,20 +151,45 @@ export default function RegisterScreen() {
             </Text>
           </View>
 
+          {error ? (
+            <View style={[styles.errorContainer, { backgroundColor: '#ff000020', borderColor: '#ff0000' }]}>
+              <Ionicons name="alert-circle" size={20} color="#ff0000" />
+              <Text style={[styles.errorText, { color: '#ff0000' }]}>{error}</Text>
+            </View>
+          ) : null}
+
           {/* Form */}
           <View style={styles.form}>
-            {/* Full Name Input */}
+            {/* First Name Input */}
             <View style={styles.inputSection}>
-              <Text style={[styles.inputLabel, { color: colors.text }]}>Nom complet</Text>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Prénom</Text>
               <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
                 <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Entrez votre nom complet"
+                  placeholder="Entrez votre prénom"
                   placeholderTextColor={colors.textSecondary}
-                  value={fullName}
-                  onChangeText={setFullName}
+                  value={firstName}
+                  onChangeText={setFirstName}
                   autoCapitalize="words"
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            {/* Last Name Input */}
+            <View style={styles.inputSection}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Nom</Text>
+              <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+                <Ionicons name="person-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Entrez votre nom"
+                  placeholderTextColor={colors.textSecondary}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  autoCapitalize="words"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -82,6 +207,7 @@ export default function RegisterScreen() {
                   onChangeText={setEmail}
                   autoCapitalize="none"
                   keyboardType="email-address"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -98,6 +224,41 @@ export default function RegisterScreen() {
                   value={phone}
                   onChangeText={setPhone}
                   keyboardType="phone-pad"
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            {/* Address Input */}
+            <View style={styles.inputSection}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Adresse</Text>
+              <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+                <Ionicons name="home-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Entrez votre adresse"
+                  placeholderTextColor={colors.textSecondary}
+                  value={address}
+                  onChangeText={setAddress}
+                  autoCapitalize="words"
+                  editable={!isLoading}
+                />
+              </View>
+            </View>
+
+            {/* CIN Input */}
+            <View style={styles.inputSection}>
+              <Text style={[styles.inputLabel, { color: colors.text }]}>Numéro CIN</Text>
+              <View style={[styles.inputContainer, { backgroundColor: colors.backgroundSecondary, borderColor: colors.border }]}>
+                <Ionicons name="card-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { color: colors.text }]}
+                  placeholder="Entrez votre numéro CIN"
+                  placeholderTextColor={colors.textSecondary}
+                  value={cin}
+                  onChangeText={setCin}
+                  autoCapitalize="characters"
+                  editable={!isLoading}
                 />
               </View>
             </View>
@@ -109,15 +270,17 @@ export default function RegisterScreen() {
                 <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={[styles.input, { color: colors.text }]}
-                  placeholder="Entrez votre mot de passe"
+                  placeholder="Entrez votre mot de passe (min. 6 caractères)"
                   placeholderTextColor={colors.textSecondary}
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={!showPassword}
+                  editable={!isLoading}
                 />
                 <TouchableOpacity 
                   onPress={() => setShowPassword(!showPassword)}
                   style={styles.eyeIcon}
+                  disabled={isLoading}
                 >
                   <Ionicons 
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
@@ -130,10 +293,19 @@ export default function RegisterScreen() {
 
             {/* Register Button */}
             <TouchableOpacity 
-              style={[styles.registerButton, { backgroundColor: colors.primary }]}
+              style={[
+                styles.registerButton, 
+                { backgroundColor: colors.primary },
+                isLoading && { opacity: 0.7 }
+              ]}
               onPress={handleRegister}
+              disabled={isLoading}
             >
-              <Text style={styles.registerButtonText}>S'inscrire</Text>
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.registerButtonText}>S'inscrire</Text>
+              )}
             </TouchableOpacity>
 
             {/* Terms */}
@@ -236,6 +408,20 @@ const styles = StyleSheet.create({
   },
   eyeIcon: {
     padding: 8,
+  },
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+    gap: 8,
+  },
+  errorText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: '500',
   },
   registerButton: {
     padding: 18,

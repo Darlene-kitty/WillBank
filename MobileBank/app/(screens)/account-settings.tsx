@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView, Alert } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { PremiumCard, PremiumIcon, PremiumDivider } from '@/components/shared';
@@ -10,6 +11,7 @@ import { PremiumCard, PremiumIcon, PremiumDivider } from '@/components/shared';
 export default function AccountSettingsScreen() {
   const router = useRouter();
   const { colors, toggleTheme, colorScheme } = useTheme();
+  const { logout } = useAuthContext();
   const isDark = colorScheme === 'dark';
 
   const settingsSections = [
@@ -48,19 +50,15 @@ export default function AccountSettingsScreen() {
     } else if (item.route) {
       // Navigation vers les pages
       if (item.route === '/profile') {
-<<<<<<< HEAD
-        router.push('/profile-settings' as any);
       } else if (item.route === '/accounts') {
-        router.push('/account-config?accountId=1' as any);
+        router.push('/(screens)/account-config?accountId=1' as any);
       } else if (item.route === '/notification-settings') {
         router.push('/notification-settings' as any);
-=======
         router.push('/(screens)/profile-settings' as any);
       } else if (item.route === '/accounts') {
         router.push('/(screens)/account-config?accountId=1' as any);
       } else if (item.route === '/notification-settings') {
         router.push('/(screens)/notification-settings' as any);
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
       } else {
         Alert.alert('Navigation', `Vers ${item.label}`);
       }
@@ -70,7 +68,7 @@ export default function AccountSettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Premium Gradient Header */}
       <LinearGradient
         colors={['#0066FF', '#0052CC']}
@@ -118,11 +116,7 @@ export default function AccountSettingsScreen() {
               </Text>
             </View>
             <Pressable 
-<<<<<<< HEAD
-              onPress={() => router.push('/profile-settings' as any)}
-=======
               onPress={() => router.push('/(screens)/profile-settings' as any)}
->>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               style={styles.editButton}
             >
               <Ionicons name="create-outline" size={20} color={colors.primary} />
@@ -213,7 +207,14 @@ export default function AccountSettingsScreen() {
             ]}
             onPress={() => Alert.alert('Déconnexion', 'Êtes-vous sûr de vouloir vous déconnecter ?', [
               { text: 'Annuler', style: 'cancel' },
-              { text: 'Déconnexion', style: 'destructive', onPress: () => router.replace('/(auth)/login' as any) }
+              { 
+                text: 'Déconnexion', 
+                style: 'destructive', 
+                onPress: async () => {
+                  await logout();
+                  router.replace('/(auth)/login' as any);
+                }
+              }
             ])}
           >
             <Ionicons name="log-out-outline" size={20} color="#FF3B30" />
@@ -228,7 +229,7 @@ export default function AccountSettingsScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -237,8 +238,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerGradient: {
-    paddingTop: 10,
-    paddingBottom: 20,
+    paddingTop: 50,
+    paddingBottom: 16,
     paddingHorizontal: 20,
   },
   header: {

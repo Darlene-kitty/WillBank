@@ -3,13 +3,29 @@
  * URLs directes vers les microservices (sans passer par la gateway)
  */
 
+import { Platform } from 'react-native';
+
 // Détection de l'environnement de développement
 const isDev = __DEV__;
 
 // Base URL pour Android emulator: 10.0.2.2 -> localhost de la machine hôte
 // Pour iOS simulator: localhost fonctionne directement
+// Pour Web: localhost fonctionne directement
 // Pour device physique: utiliser l'IP de la machine (ex: 192.168.1.x)
-const DEV_HOST = '10.0.2.2'; // Changez en 'localhost' pour iOS ou l'IP pour device physique
+const getDevHost = () => {
+  if (Platform.OS === 'web') {
+    return 'localhost';
+  } else if (Platform.OS === 'android') {
+    // Si tu testes sur un émulateur, utilise 10.0.2.2
+    // Si tu testes sur un appareil physique via LAN, utilise l'IP réelle
+    return '192.168.43.26'; // Modifie cette IP selon ton réseau
+  } else {
+    // iOS or other platforms
+    return '192.168.43.26'; // Modifie cette IP selon ton réseau
+  }
+};
+
+const DEV_HOST = getDevHost();
 
 // Configuration des URLs des microservices
 export const API_CONFIG = {

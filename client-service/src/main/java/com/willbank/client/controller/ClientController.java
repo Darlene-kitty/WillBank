@@ -40,7 +40,7 @@ public class ClientController {
         @ApiResponse(responseCode = "200", description = "Client found"),
         @ApiResponse(responseCode = "404", description = "Client not found")
     })
-    public ResponseEntity<ClientDTO> getClientById(@PathVariable Long id) {
+    public ResponseEntity<ClientDTO> getClientById(@PathVariable("id") Long id) {
         ClientDTO client = clientService.getClientById(id);
         return ResponseEntity.ok(client);
     }
@@ -60,7 +60,7 @@ public class ClientController {
         @ApiResponse(responseCode = "404", description = "Client not found"),
         @ApiResponse(responseCode = "400", description = "Invalid input")
     })
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, 
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable("id") Long id, 
                                                    @Valid @RequestBody ClientDTO clientDTO) {
         ClientDTO updated = clientService.updateClient(id, clientDTO);
         return ResponseEntity.ok(updated);
@@ -72,7 +72,7 @@ public class ClientController {
         @ApiResponse(responseCode = "204", description = "Client deleted successfully"),
         @ApiResponse(responseCode = "404", description = "Client not found")
     })
-    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteClient(@PathVariable("id") Long id) {
         clientService.deleteClient(id);
         return ResponseEntity.noContent().build();
     }
