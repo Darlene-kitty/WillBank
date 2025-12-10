@@ -211,6 +211,7 @@ export default function AccountDetailsScreen() {
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
                 onPress={() => router.push('/(screens)/deposit' as any)}
+                onPress={() => router.push('/deposit' as any)}
               >
                 <LinearGradient
                   colors={['#34C759', '#28A745']}
@@ -265,6 +266,7 @@ export default function AccountDetailsScreen() {
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
                 onPress={() => router.push('/(screens)/deposit' as any)}
+                onPress={() => router.push('/deposit' as any)}
               >
                 <LinearGradient
                   colors={['#34C759', '#28A745']}

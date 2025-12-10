@@ -111,10 +111,5 @@ application-local.yml
 application-dev.yml
 *.pid
 
-# Firebase Service Account Keys (sensitive)
+client-service/src/main/resources/serviceAccountKey.json
 **/serviceAccountKey.json
-serviceAccountKey.json
-
-# Environment variables with sensitive data
-**/.env.local
-**/.env.*.local

@@ -50,6 +50,10 @@ export default function AccountSettingsScreen() {
     } else if (item.route) {
       // Navigation vers les pages
       if (item.route === '/profile') {
+      } else if (item.route === '/accounts') {
+        router.push('/(screens)/account-config?accountId=1' as any);
+      } else if (item.route === '/notification-settings') {
+        router.push('/notification-settings' as any);
         router.push('/(screens)/profile-settings' as any);
       } else if (item.route === '/accounts') {
         router.push('/(screens)/account-config?accountId=1' as any);
