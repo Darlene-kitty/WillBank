@@ -190,7 +190,7 @@ export default function LoginMD3Screen() {
             <Text style={[styles.bodyMedium, { color: colors.textSecondary }]}>
               Pas encore de compte ? 
             </Text>
-            <Pressable onPress={() => router.push('/register')}>
+            <Pressable onPress={() => router.push('/(auth)/register')}>
               <Text style={[styles.labelLarge, { color: colors.primary }]}> Créer un compte</Text>
             </Pressable>
           </View>

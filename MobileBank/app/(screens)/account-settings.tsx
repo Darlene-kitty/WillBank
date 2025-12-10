@@ -48,11 +48,19 @@ export default function AccountSettingsScreen() {
     } else if (item.route) {
       // Navigation vers les pages
       if (item.route === '/profile') {
+<<<<<<< HEAD
         router.push('/profile-settings' as any);
       } else if (item.route === '/accounts') {
         router.push('/account-config?accountId=1' as any);
       } else if (item.route === '/notification-settings') {
         router.push('/notification-settings' as any);
+=======
+        router.push('/(screens)/profile-settings' as any);
+      } else if (item.route === '/accounts') {
+        router.push('/(screens)/account-config?accountId=1' as any);
+      } else if (item.route === '/notification-settings') {
+        router.push('/(screens)/notification-settings' as any);
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
       } else {
         Alert.alert('Navigation', `Vers ${item.label}`);
       }
@@ -110,7 +118,11 @@ export default function AccountSettingsScreen() {
               </Text>
             </View>
             <Pressable 
+<<<<<<< HEAD
               onPress={() => router.push('/profile-settings' as any)}
+=======
+              onPress={() => router.push('/(screens)/profile-settings' as any)}
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               style={styles.editButton}
             >
               <Ionicons name="create-outline" size={20} color={colors.primary} />

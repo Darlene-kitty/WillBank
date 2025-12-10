@@ -8,8 +8,13 @@ spring:
     redis:
       host: localhost
       port: 6379
+      timeout: 2000ms
+      # Redis n'est pas obligatoire - l'application démarre sans lui
   cloud:
     gateway:
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 10s
       discovery:
         locator:
           enabled: true
@@ -18,62 +23,33 @@ spring:
         - id: client-service
           uri: lb://client-service
           predicates:
-            - Path=/api/clients/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
+            - Path=/api/clients/**, /api/auth/**
         
         - id: account-service
           uri: lb://account-service
           predicates:
             - Path=/api/accounts/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
         
         - id: transaction-service
           uri: lb://transaction-service
           predicates:
             - Path=/api/transactions/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 5
-                redis-rate-limiter.burstCapacity: 10
-                redis-rate-limiter.requestedTokens: 1
         
         - id: notification-service
           uri: lb://notification-service
           predicates:
             - Path=/api/notifications/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
         
         - id: dashboard-composite-service
           uri: lb://dashboard-composite-service
           predicates:
             - Path=/api/dashboard/**, /api/statements/**
-          filters:
-            - name: RequestRateLimiter
-              args:
-                redis-rate-limiter.replenishRate: 10
-                redis-rate-limiter.burstCapacity: 20
-                redis-rate-limiter.requestedTokens: 1
 
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+    registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
 
@@ -87,3 +63,4 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     org.springframework.security: DEBUG
+    com.netflix.discovery: WARN

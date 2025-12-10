@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/contexts/theme-context';
+import { AuthProvider } from '@/contexts/auth-context';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -24,108 +25,50 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: 'default',
-          animationDuration: 250,
-        }}
-      >
-        <Stack.Screen 
-          name="(tabs)" 
-          options={{ 
+      <AuthProvider>
+        <Stack
+          screenOptions={{
             headerShown: false,
-            animation: 'fade',
-          }} 
-        />
-        <Stack.Screen 
-          name="login"
-          options={{
-            animation: 'fade',
-            animationDuration: 200,
-          }}
-        />
-        <Stack.Screen 
-          name="register" 
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            animationDuration: 300,
-          }}
-        />
-        <Stack.Screen 
-          name="account-details"
-          options={{
-            animation: 'slide_from_right',
+            animation: 'default',
             animationDuration: 250,
           }}
-        />
-        <Stack.Screen 
-          name="transaction-history"
-          options={{
-            animation: 'slide_from_right',
-            animationDuration: 250,
-          }}
-        />
-        <Stack.Screen 
-          name="new-transfer"
-          options={{
-            animation: 'slide_from_bottom',
-            animationDuration: 300,
-          }}
-        />
-        <Stack.Screen 
-          name="transfer-confirmation"
-          options={{
-            animation: 'slide_from_right',
-            animationDuration: 250,
-          }}
-        />
-        <Stack.Screen 
-          name="transfer-success" 
-          options={{
-            presentation: 'modal',
-            animation: 'fade',
-            animationDuration: 200,
-          }}
-        />
-        <Stack.Screen 
-          name="beneficiaries"
-          options={{
-            animation: 'slide_from_right',
-            animationDuration: 250,
-          }}
-        />
-        <Stack.Screen 
-          name="add-beneficiary-modal"
-          options={{
-            presentation: 'modal',
-            animation: 'slide_from_bottom',
-            animationDuration: 300,
-          }}
-        />
-        <Stack.Screen 
-          name="notifications"
-          options={{
-            animation: 'slide_from_right',
-            animationDuration: 250,
-          }}
-        />
-        <Stack.Screen 
-          name="profile"
-          options={{
-            animation: 'slide_from_right',
-            animationDuration: 250,
-          }}
-        />
-        <Stack.Screen 
-          name="statistics"
-          options={{
-            animation: 'slide_from_right',
-            animationDuration: 250,
-          }}
-        />
-      </Stack>
+        >
+          <Stack.Screen 
+            name="index"
+            options={{
+              headerShown: false,
+            }}
+          />
+          <Stack.Screen 
+            name="(auth)" 
+            options={{ 
+              headerShown: false,
+              animation: 'fade',
+            }} 
+          />
+          <Stack.Screen 
+            name="(tabs)" 
+            options={{ 
+              headerShown: false,
+              animation: 'fade',
+            }} 
+          />
+          <Stack.Screen 
+            name="(screens)"
+            options={{
+              headerShown: false,
+              animation: 'slide_from_right',
+            }}
+          />
+          <Stack.Screen 
+            name="statistics"
+            options={{
+              animation: 'slide_from_right',
+              animationDuration: 250,
+            }}
+          />
+        </Stack>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

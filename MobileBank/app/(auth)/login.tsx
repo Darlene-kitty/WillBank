@@ -1,9 +1,10 @@
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
 import Animated, { 
   useAnimatedStyle, 
   useSharedValue, 
@@ -17,10 +18,13 @@ import Animated, {
 export default function LoginScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { login, isAuthenticated } = useAuthContext();
+  
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Animation values
   const logoScale = useSharedValue(0);
@@ -42,16 +46,42 @@ export default function LoginScreen() {
     cardOpacity.value = withTiming(1, { duration: 600 });
   }, []);
 
+  // Redirection si déjà authentifié
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)/' as any);
+    }
+  }, [isAuthenticated]);
+
   const handleLogin = async () => {
+    // Validation
+    if (!email || !password) {
+      setError('Veuillez remplir tous les champs');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setError('Email invalide');
+      return;
+    }
+
     setIsLoading(true);
+    setError('');
     buttonScale.value = withSequence(
       withSpring(0.95),
       withSpring(1)
     );
-    setTimeout(() => {
+
+    try {
+      await login(email, password);
+      // La redirection se fera automatiquement via le useEffect ci-dessus
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || 'Identifiants incorrects';
+      setError(errorMessage);
+      Alert.alert('Erreur de connexion', errorMessage);
+    } finally {
       setIsLoading(false);
-      router.replace('/(tabs)/' as any);
-    }, 500);
+    }
   };
 
   const handleBiometric = async () => {
@@ -286,7 +316,7 @@ export default function LoginScreen() {
             <Text style={[styles.registerText, { color: colors.textSecondary }]}>
               Nouveau sur WillBank ? 
             </Text>
-            <Pressable onPress={() => router.push('/register')}>
+            <Pressable onPress={() => router.push('/(auth)/register')}>
               <LinearGradient
                 colors={['#667EEA', '#764BA2']}
                 start={{ x: 0, y: 0 }}

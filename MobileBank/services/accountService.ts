@@ -1,90 +1,121 @@
-import api from './api';
+import { accountApi } from './api';
+import { API_CONFIG } from '@/config/environment';
 
-export interface BankAccount {
+// Types
+export interface AccountDTO {
   id: number;
   accountNumber: string;
   clientId: number;
-  accountType: 'SAVINGS' | 'CHECKING' | 'BUSINESS';
+  accountType: 'CHECKING' | 'SAVINGS' | 'BUSINESS';
   balance: number;
-  status: 'ACTIVE' | 'SUSPENDED' | 'CLOSED';
+  status: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
   createdAt: string;
   updatedAt: string;
 }
 
+export interface CreateAccountRequest {
+  clientId: number;
+  accountType: 'CHECKING' | 'SAVINGS' | 'BUSINESS';
+}
+
+export interface UpdateAccountRequest {
+  accountType?: 'CHECKING' | 'SAVINGS' | 'BUSINESS';
+  status?: 'ACTIVE' | 'INACTIVE' | 'BLOCKED';
+}
+
+// Alias pour rétrocompatibilité
+export type BankAccount = AccountDTO;
+
+const ENDPOINTS = API_CONFIG.ACCOUNT_SERVICE.ENDPOINTS;
+
 export const accountService = {
   /**
-   * Récupération des comptes d'un client
+   * Création d'un nouveau compte
    */
-  getAccountsByClient: async (clientId: number): Promise<BankAccount[]> => {
-    const response = await api.get(`/api/accounts/client/${clientId}`);
+  createAccount: async (data: CreateAccountRequest): Promise<AccountDTO> => {
+    const response = await accountApi.post<AccountDTO>(ENDPOINTS.ACCOUNTS, data);
     return response.data;
   },
 
   /**
-   * Récupération des détails d'un compte
+   * Récupération d'un compte par ID
    */
-  getAccountDetails: async (accountId: number): Promise<BankAccount> => {
-    const response = await api.get(`/api/accounts/${accountId}`);
-    return response.data;
-  },
-
-  /**
-   * Récupération du solde d'un compte
-   */
-  getBalance: async (accountId: number): Promise<number> => {
-    const response = await api.get(`/api/accounts/${accountId}/balance`);
+  getAccountById: async (accountId: number): Promise<AccountDTO> => {
+    const response = await accountApi.get<AccountDTO>(ENDPOINTS.ACCOUNT_BY_ID(accountId));
     return response.data;
   },
 
   /**
    * Récupération d'un compte par numéro
    */
-  getAccountByNumber: async (accountNumber: string): Promise<BankAccount> => {
-    const response = await api.get(`/api/accounts/number/${accountNumber}`);
+  getAccountByNumber: async (accountNumber: string): Promise<AccountDTO> => {
+    const response = await accountApi.get<AccountDTO>(ENDPOINTS.ACCOUNT_BY_NUMBER(accountNumber));
+    return response.data;
+  },
+
+  /**
+   * Récupération des comptes d'un client
+   */
+  getAccountsByClient: async (clientId: number): Promise<AccountDTO[]> => {
+    const response = await accountApi.get<AccountDTO[]>(ENDPOINTS.ACCOUNTS_BY_CLIENT(clientId));
+    return response.data;
+  },
+
+  /**
+   * Récupération de tous les comptes (admin)
+   */
+  getAllAccounts: async (): Promise<AccountDTO[]> => {
+    const response = await accountApi.get<AccountDTO[]>(ENDPOINTS.ACCOUNTS);
     return response.data;
   },
 
   /**
    * Mise à jour d'un compte
    */
-  updateAccount: async (
-    accountId: number,
-    data: Partial<BankAccount>
-  ): Promise<BankAccount> => {
-    const response = await api.put(`/api/accounts/${accountId}`, data);
+  updateAccount: async (accountId: number, data: UpdateAccountRequest): Promise<AccountDTO> => {
+    const response = await accountApi.put<AccountDTO>(ENDPOINTS.ACCOUNT_BY_ID(accountId), data);
     return response.data;
   },
 
   /**
-   * Crédit d'un compte
+   * Récupération du solde d'un compte (avec cache)
+   */
+  getBalance: async (accountId: number): Promise<number> => {
+    const response = await accountApi.get<number>(ENDPOINTS.BALANCE(accountId));
+    return response.data;
+  },
+
+  /**
+   * Créditer un compte
    */
   creditAccount: async (accountId: number, amount: number): Promise<void> => {
-    await api.post(`/api/accounts/${accountId}/credit`, null, {
+    await accountApi.post(ENDPOINTS.CREDIT(accountId), null, {
       params: { amount },
     });
   },
 
   /**
-   * Débit d'un compte
+   * Débiter un compte
    */
   debitAccount: async (accountId: number, amount: number): Promise<void> => {
-    await api.post(`/api/accounts/${accountId}/debit`, null, {
+    await accountApi.post(ENDPOINTS.DEBIT(accountId), null, {
       params: { amount },
     });
   },
 
   /**
-   * Récupération de tous les comptes (admin only)
+   * Suppression d'un compte (admin)
    */
-  getAllAccounts: async (): Promise<BankAccount[]> => {
-    const response = await api.get('/api/accounts');
-    return response.data;
+  deleteAccount: async (accountId: number): Promise<void> => {
+    await accountApi.delete(ENDPOINTS.ACCOUNT_BY_ID(accountId));
   },
 
   /**
-   * Suppression d'un compte (admin only)
+   * Alias pour rétrocompatibilité
    */
-  deleteAccount: async (accountId: number): Promise<void> => {
-    await api.delete(`/api/accounts/${accountId}`);
+  getAccountDetails: async (accountId: number): Promise<AccountDTO> => {
+    return accountService.getAccountById(accountId);
   },
 };
+
+export default accountService;

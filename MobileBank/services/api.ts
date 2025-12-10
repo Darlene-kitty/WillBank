@@ -1,77 +1,89 @@
-import axios from 'axios';
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { API_CONFIG, APP_CONFIG } from '@/config/environment';
 
-// Configuration de base
-const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:8080'  // Development
-  : 'https://api.willbank.com'; // Production
+// Types
+interface RetryConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
-// Création de l'instance Axios
-const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-});
+// Création d'une instance Axios pour chaque microservice
+const createApiInstance = (baseURL: string): AxiosInstance => {
+  const instance = axios.create({
+    baseURL,
+    timeout: APP_CONFIG.TIMEOUT,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+  });
 
-// Intercepteur de requête - Ajoute le token JWT
-api.interceptors.request.use(
-  async (config) => {
-    try {
-      const token = await AsyncStorage.getItem('authToken');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    } catch (error) {
-      console.error('Error getting auth token:', error);
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Intercepteur de réponse - Gère le refresh token
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // Si erreur 401 et pas déjà tenté de refresh
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
+  // Intercepteur de requête - Ajoute le token JWT
+  instance.interceptors.request.use(
+    async (config) => {
       try {
-        const refreshToken = await AsyncStorage.getItem('refreshToken');
-        
-        if (refreshToken) {
-          // Appel au endpoint de refresh
-          const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
-            refreshToken,
-          });
-
-          const { token: newToken } = response.data;
-
-          // Sauvegarde du nouveau token
-          await AsyncStorage.setItem('authToken', newToken);
-
-          // Retry la requête originale avec le nouveau token
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
-          return api(originalRequest);
+        const token = await AsyncStorage.getItem(APP_CONFIG.TOKEN_KEY);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
-      } catch (refreshError) {
-        // Si le refresh échoue, déconnexion
-        await AsyncStorage.multiRemove(['authToken', 'refreshToken', 'clientId']);
-        // Redirection vers login (à gérer dans l'app)
-        return Promise.reject(refreshError);
+      } catch (error) {
+        console.error('Error getting auth token:', error);
       }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  // Intercepteur de réponse - Gère le refresh token
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error: AxiosError) => {
+      const originalRequest = error.config as RetryConfig;
+
+      if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+        originalRequest._retry = true;
+
+        try {
+          const refreshToken = await AsyncStorage.getItem(APP_CONFIG.REFRESH_TOKEN_KEY);
+          
+          if (refreshToken) {
+            const response = await axios.post(
+              `${API_CONFIG.CLIENT_SERVICE.BASE_URL}${API_CONFIG.CLIENT_SERVICE.ENDPOINTS.REFRESH_TOKEN}`,
+              { refreshToken }
+            );
+
+            const { accessToken } = response.data;
+            await AsyncStorage.setItem(APP_CONFIG.TOKEN_KEY, accessToken);
+
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            }
+            return instance(originalRequest);
+          }
+        } catch (refreshError) {
+          await AsyncStorage.multiRemove([
+            APP_CONFIG.TOKEN_KEY,
+            APP_CONFIG.REFRESH_TOKEN_KEY,
+            APP_CONFIG.CLIENT_ID_KEY,
+          ]);
+          return Promise.reject(refreshError);
+        }
+      }
+
+      return Promise.reject(error);
     }
+  );
 
-    return Promise.reject(error);
-  }
-);
+  return instance;
+};
 
-export default api;
+// Instances pour chaque microservice
+export const clientApi = createApiInstance(API_CONFIG.CLIENT_SERVICE.BASE_URL);
+export const accountApi = createApiInstance(API_CONFIG.ACCOUNT_SERVICE.BASE_URL);
+export const transactionApi = createApiInstance(API_CONFIG.TRANSACTION_SERVICE.BASE_URL);
+export const notificationApi = createApiInstance(API_CONFIG.NOTIFICATION_SERVICE.BASE_URL);
+export const dashboardApi = createApiInstance(API_CONFIG.DASHBOARD_SERVICE.BASE_URL);
+
+// Export par défaut (clientApi pour la rétrocompatibilité)
+export default clientApi;
+

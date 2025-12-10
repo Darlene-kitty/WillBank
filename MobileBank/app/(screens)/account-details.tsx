@@ -192,7 +192,11 @@ export default function AccountDetailsScreen() {
                   styles.actionBtn,
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
+<<<<<<< HEAD
                 onPress={() => router.push('/new-transfer' as any)}
+=======
+                onPress={() => router.push('/(screens)/new-transfer' as any)}
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               >
                 <LinearGradient
                   colors={['#0066FF', '#0052CC']}
@@ -210,7 +214,11 @@ export default function AccountDetailsScreen() {
                   styles.actionBtn,
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
+<<<<<<< HEAD
                 onPress={() => router.push('/deposit' as any)}
+=======
+                onPress={() => router.push('/(screens)/deposit' as any)}
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               >
                 <LinearGradient
                   colors={['#34C759', '#28A745']}
@@ -264,7 +272,11 @@ export default function AccountDetailsScreen() {
                   styles.actionBtn,
                   { opacity: pressed ? 0.9 : 1 }
                 ]}
+<<<<<<< HEAD
                 onPress={() => router.push('/deposit' as any)}
+=======
+                onPress={() => router.push('/(screens)/deposit' as any)}
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               >
                 <LinearGradient
                   colors={['#34C759', '#28A745']}
@@ -539,7 +551,11 @@ export default function AccountDetailsScreen() {
             <Text style={[styles.cardTitle, { color: colors.text }]}>
               Transactions Récentes
             </Text>
+<<<<<<< HEAD
             <Pressable onPress={() => router.push('/transaction-history' as any)}>
+=======
+            <Pressable onPress={() => router.push('/(screens)/transaction-history' as any)}>
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
               <Text style={styles.viewAllText}>Tout voir →</Text>
             </Pressable>
           </View>
@@ -565,7 +581,11 @@ export default function AccountDetailsScreen() {
         >
           <PremiumButton
             title="Voir l'historique complet"
+<<<<<<< HEAD
             onPress={() => router.push('/transaction-history' as any)}
+=======
+            onPress={() => router.push('/(screens)/transaction-history' as any)}
+>>>>>>> 55ac17aa7536978a060228b5a91d68ff68d5de1a
             icon="receipt"
             variant="primary"
           />

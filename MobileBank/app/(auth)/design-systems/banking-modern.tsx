@@ -236,7 +236,7 @@ export default function LoginBankingModernScreen() {
             <Text style={[styles.registerText, { color: colors.textSecondary }]}>
               New to WillBank? 
             </Text>
-            <Pressable onPress={() => router.push('/register')}>
+            <Pressable onPress={() => router.push('/(auth)/register')}>
               <LinearGradient
                 colors={BankingModern.gradients.premium as any}
                 start={{ x: 0, y: 0 }}
