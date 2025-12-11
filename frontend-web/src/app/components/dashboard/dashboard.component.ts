@@ -129,6 +129,11 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => {
       this.checkForSmartNotifications();
     }, 2000);
+
+    // Rafraîchissement automatique toutes les 30 secondes
+    setInterval(() => {
+      this.refreshDashboard();
+    }, 30000);
   }
 
   loadGoals(): void {

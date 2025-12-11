@@ -1,0 +1,189 @@
+<div class="app-layout">
+  <app-sidebar></app-sidebar>
+  
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Paramètres</h1>
+      <p>Gérez vos préférences et paramètres de compte</p>
+    </div>
+
+    <div class="settings-container">
+      <!-- Paramètres de profil -->
+      <div class="settings-section">
+        <div class="section-header">
+          <h2>Informations personnelles</h2>
+          <p>Modifiez vos informations de profil</p>
+        </div>
+        
+        <form (ngSubmit)="updateProfile()" class="settings-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">Prénom</label>
+              <input 
+                type="text" 
+                id="firstName" 
+                [(ngModel)]="profileSettings.firstName"
+                name="firstName"
+                class="form-control"
+              >
+            </div>
+            <div class="form-group">
+              <label for="lastName">Nom</label>
+              <input 
+                type="text" 
+                id="lastName" 
+                [(ngModel)]="profileSettings.lastName"
+                name="lastName"
+                class="form-control"
+              >
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              [(ngModel)]="profileSettings.email"
+              name="email"
+              class="form-control"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="phone">Téléphone</label>
+            <input 
+              type="tel" 
+              id="phone" 
+              [(ngModel)]="profileSettings.phone"
+              name="phone"
+              class="form-control"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="address">Adresse</label>
+            <textarea 
+              id="address" 
+              [(ngModel)]="profileSettings.address"
+              name="address"
+              class="form-control"
+              rows="3"
+            ></textarea>
+          </div>
+          
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            <span *ngIf="loading">Mise à jour...</span>
+            <span *ngIf="!loading">Mettre à jour le profil</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Paramètres de sécurité -->
+      <div class="settings-section">
+        <div class="section-header">
+          <h2>Sécurité</h2>
+          <p>Modifiez votre mot de passe</p>
+        </div>
+        
+        <form (ngSubmit)="changePassword()" class="settings-form">
+          <div class="form-group">
+            <label for="currentPassword">Mot de passe actuel</label>
+            <input 
+              type="password" 
+              id="currentPassword" 
+              [(ngModel)]="securitySettings.currentPassword"
+              name="currentPassword"
+              class="form-control"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="newPassword">Nouveau mot de passe</label>
+            <input 
+              type="password" 
+              id="newPassword" 
+              [(ngModel)]="securitySettings.newPassword"
+              name="newPassword"
+              class="form-control"
+            >
+          </div>
+          
+          <div class="form-group">
+            <label for="confirmPassword">Confirmer le mot de passe</label>
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              [(ngModel)]="securitySettings.confirmPassword"
+              name="confirmPassword"
+              class="form-control"
+            >
+          </div>
+          
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            <span *ngIf="loading">Modification...</span>
+            <span *ngIf="!loading">Changer le mot de passe</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Paramètres de notification -->
+      <div class="settings-section">
+        <div class="section-header">
+          <h2>Notifications</h2>
+          <p>Gérez vos préférences de notification</p>
+        </div>
+        
+        <div class="settings-form">
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="notificationSettings.emailNotifications"
+                (change)="updateNotificationSettings()"
+              >
+              <span class="checkmark"></span>
+              Notifications par email
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="notificationSettings.smsNotifications"
+                (change)="updateNotificationSettings()"
+              >
+              <span class="checkmark"></span>
+              Notifications par SMS
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="notificationSettings.transactionAlerts"
+                (change)="updateNotificationSettings()"
+              >
+              <span class="checkmark"></span>
+              Alertes de transaction
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="notificationSettings.marketingEmails"
+                (change)="updateNotificationSettings()"
+              >
+              <span class="checkmark"></span>
+              Emails marketing
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
