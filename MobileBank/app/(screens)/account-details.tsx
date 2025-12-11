@@ -61,6 +61,9 @@ export default function AccountDetailsScreen() {
     monthlyDeposit: null,
   };
 
+  // Déterminer le type de compte
+  const isCheckingAccount = account?.accountType === 'CHECKING';
+
   const recentTransactions = isCheckingAccount ? [
     { id: 1, name: 'Apple Store', date: "Aujourd'hui", amount: -999.00, icon: 'bag-handle', category: 'Shopping' },
     { id: 2, name: 'Starbucks', date: 'Hier', amount: -6.50, icon: 'cafe', category: 'Restaurant' },
