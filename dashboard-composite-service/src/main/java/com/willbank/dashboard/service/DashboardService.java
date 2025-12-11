@@ -8,10 +8,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,6 +24,7 @@ public class DashboardService {
     private final ClientServiceClient clientServiceClient;
     private final AccountServiceClient accountServiceClient;
     private final TransactionServiceClient transactionServiceClient;
+    private final DashboardAnalyticsService analyticsService;
     
     public DashboardResponse getDashboard(Long clientId) {
         log.info("Fetching dashboard for client ID: {}", clientId);
@@ -53,10 +56,40 @@ public class DashboardService {
         
         log.info("Fetched {} recent transactions", recentTransactions.size());
         
+        // Calculs enrichis
+        BigDecimal totalBalance = accounts.stream()
+            .map(AccountDTO::getBalance)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal monthlyIncome = allTransactions.stream()
+            .filter(t -> "DEPOSIT".equals(t.getType()))
+            .map(TransactionDTO::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal monthlyExpenses = allTransactions.stream()
+            .filter(t -> "WITHDRAWAL".equals(t.getType()) || "TRANSFER".equals(t.getType()))
+            .map(TransactionDTO::getAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        BigDecimal savingsRate = analyticsService.calculateSavingsRate(monthlyIncome, monthlyExpenses);
+        Map<String, BigDecimal> transactionsByType = analyticsService.calculateTransactionsByType(allTransactions);
+        List<BalanceHistoryDTO> balanceHistory = analyticsService.generateBalanceHistory(accounts, allTransactions);
+        DashboardInsightsDTO insights = analyticsService.generateInsights(accounts, allTransactions);
+        
         DashboardResponse response = new DashboardResponse();
         response.setClient(client);
         response.setAccounts(accounts);
         response.setRecentTransactions(recentTransactions);
+        response.setTotalBalance(totalBalance);
+        response.setMonthlyIncome(monthlyIncome);
+        response.setMonthlyExpenses(monthlyExpenses);
+        response.setSavingsRate(savingsRate);
+        response.setTransactionsByType(transactionsByType);
+        response.setBalanceHistory(balanceHistory);
+        response.setInsights(insights);
+        response.setLastUpdated(LocalDateTime.now());
+        
+        log.info("Dashboard enriched with analytics data for client {}", clientId);
         
         return response;
     }
