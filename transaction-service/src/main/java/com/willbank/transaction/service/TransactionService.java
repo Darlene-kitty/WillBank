@@ -2,6 +2,8 @@ package com.willbank.transaction.service;
 
 import com.willbank.transaction.client.AccountClient;
 import com.willbank.transaction.client.ClientClient;
+import com.willbank.transaction.client.NotificationClient;
+import com.willbank.transaction.client.NotificationRequest;
 import com.willbank.transaction.dto.AccountDTO;
 import com.willbank.transaction.dto.ClientDTO;
 import com.willbank.transaction.dto.TransactionDTO;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +34,7 @@ public class TransactionService {
     private final ClientClient clientClient;
     private final EmailService emailService;
     private final EventPublisher eventPublisher;
+    private final NotificationClient notificationClient;
     
     @Transactional
     public TransactionDTO createTransaction(TransactionDTO transactionDTO) {
@@ -105,23 +109,93 @@ public class TransactionService {
             transaction.setStatus(Transaction.TransactionStatus.COMPLETED);
             Transaction savedTransaction = transactionRepository.save(transaction);
             
-            // Send email notification to the client
+            // Get account and client information
+            AccountDTO account = null;
+            ClientDTO client = null;
+            AccountDTO destinationAccount = null;
+            ClientDTO destinationClient = null;
+            
             try {
-                AccountDTO account = accountClient.getAccountById(savedTransaction.getSourceAccountId());
-                ClientDTO client = clientClient.getClientById(account.getClientId());
+                account = accountClient.getAccountById(savedTransaction.getSourceAccountId());
+                client = clientClient.getClientById(account.getClientId());
                 
-                emailService.sendTransactionNotificationEmail(
-                    client.getEmail(),
-                    client.getFirstName(),
-                    savedTransaction.getType().toString(),
-                    savedTransaction.getAmount(),
-                    account.getAccountNumber(),
-                    savedTransaction.getTransactionReference(),
-                    account.getBalance()
-                );
+                // Get destination client for transfers
+                if (savedTransaction.getType() == Transaction.TransactionType.TRANSFER && 
+                    savedTransaction.getDestinationAccountId() != null) {
+                    destinationAccount = accountClient.getAccountById(savedTransaction.getDestinationAccountId());
+                    destinationClient = clientClient.getClientById(destinationAccount.getClientId());
+                }
             } catch (Exception e) {
-                log.error("Failed to send transaction notification email: {}", e.getMessage());
-                // Don't fail the transaction if email fails
+                log.error("Failed to fetch account/client information: {}", e.getMessage());
+            }
+            
+            // Send email notification to the client
+            if (client != null && account != null) {
+                try {
+                    emailService.sendTransactionNotificationEmail(
+                        client.getEmail(),
+                        client.getFirstName(),
+                        savedTransaction.getType().toString(),
+                        savedTransaction.getAmount(),
+                        account.getAccountNumber(),
+                        savedTransaction.getTransactionReference(),
+                        account.getBalance()
+                    );
+                } catch (Exception e) {
+                    log.error("Failed to send transaction notification email: {}", e.getMessage());
+                }
+            }
+            
+            // Send IN_APP notification to source client
+            if (client != null) {
+                try {
+                    String notificationMessage = buildNotificationMessage(
+                        savedTransaction.getType(),
+                        savedTransaction.getAmount(),
+                        savedTransaction.getDescription(),
+                        true
+                    );
+                    
+                    NotificationRequest notificationRequest = new NotificationRequest(
+                        "IN_APP",
+                        client.getEmail(),
+                        notificationMessage,
+                        String.format("{\"transactionId\":%d,\"reference\":\"%s\"}", 
+                            savedTransaction.getId(), 
+                            savedTransaction.getTransactionReference())
+                    );
+                    
+                    notificationClient.sendNotification(notificationRequest);
+                    log.info("IN_APP notification sent to source client: {}", client.getEmail());
+                } catch (Exception e) {
+                    log.error("Failed to send IN_APP notification to source client: {}", e.getMessage());
+                }
+            }
+            
+            // Send IN_APP notification to destination client (for transfers)
+            if (destinationClient != null && savedTransaction.getType() == Transaction.TransactionType.TRANSFER) {
+                try {
+                    String notificationMessage = buildNotificationMessage(
+                        Transaction.TransactionType.DEPOSIT, // Received transfer shows as deposit
+                        savedTransaction.getAmount(),
+                        "Virement reçu" + (savedTransaction.getDescription() != null ? ": " + savedTransaction.getDescription() : ""),
+                        false
+                    );
+                    
+                    NotificationRequest notificationRequest = new NotificationRequest(
+                        "IN_APP",
+                        destinationClient.getEmail(),
+                        notificationMessage,
+                        String.format("{\"transactionId\":%d,\"reference\":\"%s\"}", 
+                            savedTransaction.getId(), 
+                            savedTransaction.getTransactionReference())
+                    );
+                    
+                    notificationClient.sendNotification(notificationRequest);
+                    log.info("IN_APP notification sent to destination client: {}", destinationClient.getEmail());
+                } catch (Exception e) {
+                    log.error("Failed to send IN_APP notification to destination client: {}", e.getMessage());
+                }
             }
             
             // Publish transaction created event
@@ -192,6 +266,36 @@ public class TransactionService {
             reference = "TXN-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         } while (transactionRepository.existsByTransactionReference(reference));
         return reference;
+    }
+    
+    private String buildNotificationMessage(Transaction.TransactionType type, BigDecimal amount, String description, boolean isSource) {
+        String formattedAmount = String.format("%.2f €", amount);
+        
+        switch (type) {
+            case DEPOSIT:
+                return String.format("Dépôt de %s effectué avec succès%s", 
+                    formattedAmount, 
+                    description != null ? ": " + description : "");
+                    
+            case WITHDRAWAL:
+                return String.format("Retrait de %s effectué avec succès%s", 
+                    formattedAmount,
+                    description != null ? ": " + description : "");
+                    
+            case TRANSFER:
+                if (isSource) {
+                    return String.format("Virement de %s effectué avec succès%s", 
+                        formattedAmount,
+                        description != null ? ": " + description : "");
+                } else {
+                    return String.format("Virement de %s reçu%s", 
+                        formattedAmount,
+                        description != null ? ": " + description : "");
+                }
+                
+            default:
+                return String.format("Transaction de %s effectuée", formattedAmount);
+        }
     }
     
     private TransactionDTO toDTO(Transaction transaction) {

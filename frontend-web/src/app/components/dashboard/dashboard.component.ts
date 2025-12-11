@@ -171,13 +171,27 @@ export class DashboardComponent implements OnInit {
   calculateStatistics(): void {
     if (!this.dashboard) return;
 
-    this.dashboard.recentTransactions.forEach(t => {
-      if (t.type === 'DEPOSIT') {
-        this.totalIncome += t.amount;
-      } else {
-        this.totalExpenses += t.amount;
-      }
-    });
+    // Utiliser les données déjà calculées par le backend si disponibles
+    if (this.dashboard.monthlyIncome !== undefined) {
+      this.totalIncome = this.dashboard.monthlyIncome;
+    } else {
+      this.totalIncome = this.dashboard.recentTransactions
+        .filter(t => t.type === 'DEPOSIT')
+        .reduce((sum, t) => sum + t.amount, 0);
+    }
+
+    if (this.dashboard.monthlyExpenses !== undefined) {
+      this.totalExpenses = this.dashboard.monthlyExpenses;
+    } else {
+      this.totalExpenses = this.dashboard.recentTransactions
+        .filter(t => t.type === 'WITHDRAWAL' || t.type === 'TRANSFER')
+        .reduce((sum, t) => sum + t.amount, 0);
+    }
+
+    // Utiliser le taux de croissance du backend si disponible
+    if (this.dashboard.insights?.monthlyGrowthPercentage !== undefined) {
+      this.monthlyGrowth = this.dashboard.insights.monthlyGrowthPercentage;
+    }
 
     this.activeAccounts = this.dashboard.accounts.filter(a => a.status === 'ACTIVE').length;
     this.prepareChartData();
@@ -186,11 +200,23 @@ export class DashboardComponent implements OnInit {
   prepareChartData(): void {
     if (!this.dashboard) return;
 
-    const last7Days = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
-    const balanceData = this.generateBalanceHistory();
+    // Utiliser l'historique de solde du backend si disponible
+    let labels: string[] = [];
+    let balanceData: number[] = [];
+
+    if (this.dashboard.balanceHistory && this.dashboard.balanceHistory.length > 0) {
+      labels = this.dashboard.balanceHistory.map(h => {
+        const date = new Date(h.date);
+        return date.toLocaleDateString('fr-FR', { weekday: 'short' });
+      });
+      balanceData = this.dashboard.balanceHistory.map(h => h.balance / 1000);
+    } else {
+      labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+      balanceData = this.generateBalanceHistory();
+    }
 
     this.lineChartData = {
-      labels: last7Days,
+      labels: labels,
       datasets: [
         {
           data: balanceData,
@@ -208,10 +234,17 @@ export class DashboardComponent implements OnInit {
       ]
     };
 
-    const transactionTypes = this.dashboard.recentTransactions.reduce((acc: any, t) => {
-      acc[t.type] = (acc[t.type] || 0) + t.amount;
-      return acc;
-    }, {});
+    // Utiliser les transactions par type du backend si disponibles
+    let transactionTypes: { [key: string]: number } = {};
+    
+    if (this.dashboard.transactionsByType) {
+      transactionTypes = this.dashboard.transactionsByType;
+    } else {
+      transactionTypes = this.dashboard.recentTransactions.reduce((acc: any, t) => {
+        acc[t.type] = (acc[t.type] || 0) + t.amount;
+        return acc;
+      }, {});
+    }
 
     this.doughnutChartData = {
       labels: Object.keys(transactionTypes).map(t => this.getTransactionTypeLabel(t)),
