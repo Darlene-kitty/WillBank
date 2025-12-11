@@ -41,7 +41,7 @@ export default function StatisticsScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Premium Gradient Header */}
       <LinearGradient
-        colors={['#667EEA', '#764BA2']}
+        colors={['#667EEA', '#0066FF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
@@ -115,7 +115,7 @@ export default function StatisticsScreen() {
               icon="wallet"
               label="Épargne"
               value={`${savings.toFixed(2)} €`}
-              colors={['#667EEA', '#764BA2']}
+              colors={['#667EEA', '#0066FF']}
               variant="vertical"
               style={styles.statItem}
             />

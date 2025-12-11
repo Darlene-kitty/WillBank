@@ -38,7 +38,7 @@ export function PremiumBadge({
     success: { colors: ['#34C759', '#28A745'], bg: '#E6FFF9', text: '#34C759' },
     warning: { colors: ['#FFB800', '#FF9500'], bg: '#FFF8E6', text: '#FFB800' },
     error: { colors: ['#FF3B30', '#FF1F1F'], bg: '#FFE6E6', text: '#FF3B30' },
-    info: { colors: ['#667EEA', '#764BA2'], bg: '#F0F2FF', text: '#667EEA' },
+    info: { colors: ['#667EEA', '#0066FF'], bg: '#F0F2FF', text: '#667EEA' },
   };
 
   const sizeStyles = {

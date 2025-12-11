@@ -14,7 +14,7 @@ Projet complet d'architecture microservices pour une application bancaire avec S
 6. **notification-service** (8084) - Notifications (Email, Push, SMS)
 7. **dashboard-composite-service** (8085) - Dashboard composite
 
-### Technologies
+### Technologies Backend
 - **Java 17**
 - **Spring Boot 3.3.4**
 - **Spring Cloud 2023.0.5**
@@ -24,6 +24,10 @@ Projet complet d'architecture microservices pour une application bancaire avec S
 - **Maven** (multi-module)
 - **Lombok** (réduction du boilerplate)
 - **SpringDoc OpenAPI** (documentation Swagger)
+
+### Applications Frontend
+- **Frontend Web** - Angular 17 (port 4200)
+- **Application Mobile** - React Native + Expo (iOS/Android)
 
 ## 🚀 Prérequis
 
@@ -159,6 +163,70 @@ Chaque service expose sa documentation OpenAPI :
 - **Transaction Service** : http://localhost:8083/swagger-ui.html
 - **Notification Service** : http://localhost:8084/swagger-ui.html
 - **Dashboard Service** : http://localhost:8085/swagger-ui.html
+
+## 📱 Application Mobile (React Native + Expo)
+
+### Prérequis Mobile
+1. **Node.js 18+** - [Télécharger](https://nodejs.org/)
+2. **Expo CLI** - `npm install -g @expo/cli`
+3. **Android Studio** (pour émulateur Android)
+4. **Xcode** (pour iOS Simulator - Mac uniquement)
+
+### Installation Mobile
+```bash
+cd MobileBank
+npm install
+```
+
+### Configuration Réseau
+
+#### Pour Émulateur Android
+L'application est configurée par défaut pour l'émulateur Android :
+- IP utilisée : `10.0.2.2` (pointe vers localhost de la machine hôte)
+- Configuration : `MobileBank/config/environment.ts`
+
+#### Pour Appareil Physique
+1. Utiliser le script de basculement :
+```bash
+cd MobileBank
+.\switch-to-physical-device.bat
+```
+
+2. Ou modifier manuellement `config/environment.ts` avec votre IP :
+```typescript
+return '172.17.8.245'; // Remplacez par votre IP locale
+```
+
+### Démarrage Mobile
+```bash
+cd MobileBank
+
+# Démarrer Expo
+npm start
+
+# Ou directement pour Android
+npm run android
+
+# Ou pour iOS (Mac uniquement)
+npm run ios
+```
+
+### Test de Connexion Mobile
+```bash
+# Test connexion émulateur
+.\test-mobile-emulator-connection.bat
+
+# Test connexion appareil physique
+.\test-mobile-backend-connection.bat
+```
+
+### Fonctionnalités Mobile
+- ✅ Authentification (Login/Register)
+- ✅ Dashboard avec comptes et transactions
+- ✅ Historique des transactions
+- ✅ Notifications push
+- ✅ Profil utilisateur
+- ✅ Paramètres de compte
 
 ## 🧪 Tests avec cURL
 

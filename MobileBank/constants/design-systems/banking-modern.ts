@@ -214,7 +214,7 @@ export const BankingModern = {
   gradients: {
     primary: ['#0066FF', '#0052CC'],
     success: ['#00D68F', '#00B87A'],
-    premium: ['#667EEA', '#764BA2'],
+    premium: ['#667EEA', '#0066FF'],
     sunset: ['#FF6B6B', '#FF8E53'],
     ocean: ['#00D4FF', '#0066FF'],
   },

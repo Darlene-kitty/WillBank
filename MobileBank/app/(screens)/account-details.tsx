@@ -173,7 +173,7 @@ export default function AccountDetailsScreen() {
                   icon="trending-up"
                   label="Taux d'intérêt"
                   value={`${accountData.interestRate}% / an`}
-                  colors={['#667EEA', '#764BA2']}
+                  colors={['#667EEA', '#0066FF']}
                   variant="vertical"
                   style={styles.statItem}
                 />
@@ -259,7 +259,7 @@ export default function AccountDetailsScreen() {
                 ]}
               >
                 <LinearGradient
-                  colors={['#667EEA', '#764BA2']}
+                  colors={['#667EEA', '#0066FF']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.actionBtnGradient}

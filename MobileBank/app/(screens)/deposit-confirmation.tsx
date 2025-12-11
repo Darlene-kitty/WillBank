@@ -41,11 +41,11 @@ export default function DepositConfirmationScreen() {
 
   const getMethodColor = (method: string): [string, string] => {
     switch (method) {
-      case 'Chèque': return ['#667EEA', '#764BA2'];
+      case 'Chèque': return ['#667EEA', '#0066FF'];
       case 'Espèces': return ['#34C759', '#28A745'];
       case 'Virement': return ['#0066FF', '#0052CC'];
       case 'Carte': return ['#FF9500', '#FF6B00'];
-      default: return ['#667EEA', '#764BA2'];
+      default: return ['#667EEA', '#0066FF'];
     }
   };
 
