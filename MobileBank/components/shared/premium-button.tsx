@@ -25,7 +25,7 @@ export function PremiumButton({
 
   const defaultGradients = {
     primary: ['#0066FF', '#0052CC'],
-    secondary: ['#667EEA', '#764BA2'],
+    secondary: ['#667EEA', '#0066FF'],
     danger: ['#FF3B30', '#CC2E26'],
   };
 

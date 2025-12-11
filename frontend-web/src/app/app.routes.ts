@@ -42,6 +42,16 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'settings',
+    loadComponent: () => import('./components/settings/settings.component').then(m => m.SettingsComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'support',
+    loadComponent: () => import('./components/support/support.component').then(m => m.SupportComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '404',
     loadComponent: () => import('./components/not-found/not-found.component').then(m => m.NotFoundComponent)
   },

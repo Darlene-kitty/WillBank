@@ -6,8 +6,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   clientId: number | null;
-  client: Client | null;
-  login: (email: string, password: string) => Promise<void>;
+  client: ClientProfile | null;
+  login: (email: string, password: string) => Promise<LoginResponse>;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   register: (data: RegisterRequest) => Promise<void>;
@@ -17,7 +17,7 @@ interface RegisterRequest {
   firstName: string;
   lastName: string;
   email: string;
-  phoneNumber: string;
+  phone: string;
   password: string;
   address: string;
   cin: string;

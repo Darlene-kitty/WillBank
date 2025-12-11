@@ -1,4 +1,6 @@
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
+import { useAccounts } from '@/hooks';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -10,15 +12,29 @@ import { PremiumCard, PremiumInput, PremiumButton } from '@/components/shared';
 export default function NewTransferScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { clientId } = useAuthContext();
+  const { accounts } = useAccounts(clientId);
   const [amount, setAmount] = useState('');
-  const [selectedAccount, setSelectedAccount] = useState('Compte Courant');
+  const [selectedAccount, setSelectedAccount] = useState('');
   const [selectedBeneficiary, setSelectedBeneficiary] = useState('');
   const [reference, setReference] = useState('');
 
-  const accounts = [
-    { id: 1, name: 'Compte Courant', number: '**** 1234', balance: 10110.00, icon: 'card' },
-    { id: 2, name: 'Épargne Premium', number: '**** 5678', balance: 5120.50, icon: 'wallet' },
-  ];
+  // Transformer les comptes pour l'affichage
+  const displayAccounts = accounts.map(account => ({
+    id: account.id,
+    name: account.accountType === 'CHECKING' ? 'Compte Courant' : 
+          account.accountType === 'SAVINGS' ? 'Compte Épargne' : 'Compte Business',
+    number: `**** ${account.accountNumber.slice(-4)}`,
+    balance: account.balance,
+    icon: account.accountType === 'CHECKING' ? 'card' : 'wallet'
+  }));
+
+  // Sélectionner le premier compte par défaut
+  React.useEffect(() => {
+    if (displayAccounts.length > 0 && !selectedAccount) {
+      setSelectedAccount(displayAccounts[0].name);
+    }
+  }, [displayAccounts, selectedAccount]);
 
   const handleContinue = () => {
     if (!amount || parseFloat(amount) <= 0) {

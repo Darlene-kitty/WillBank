@@ -11,6 +11,8 @@ import { AuthService } from '../../../services/auth.service';
   styleUrls: ['./sidebar.component.scss']
 })
 export class SidebarComponent {
+  currentUser: any = null;
+
   menuItems = [
     {
       label: 'Tableau de bord',
@@ -41,7 +43,29 @@ export class SidebarComponent {
   constructor(
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    // S'abonner aux changements d'utilisateur
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
+  getUserInitials(): string {
+    if (!this.currentUser) return 'AA';
+    const firstName = this.currentUser.firstName || '';
+    const lastName = this.currentUser.lastName || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+  }
+
+  getUserName(): string {
+    if (!this.currentUser) return 'Ahmed Alami';
+    return `${this.currentUser.firstName || ''} ${this.currentUser.lastName || ''}`.trim();
+  }
+
+  getUserEmail(): string {
+    if (!this.currentUser) return 'ahmed@willbank.ma';
+    return this.currentUser.email || '';
+  }
 
   logout(): void {
     this.authService.logout();

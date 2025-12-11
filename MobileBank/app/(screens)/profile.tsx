@@ -1,5 +1,6 @@
 import { ThemeToggle } from '@/components/shared/theme-toggle';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -8,9 +9,41 @@ import { Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View } f
 export default function ProfileScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { client, logout: authLogout } = useAuthContext();
   const [biometricEnabled, setBiometricEnabled] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [promotionsEnabled, setPromotionsEnabled] = useState(false);
+
+  // Fonction pour obtenir les initiales
+  const getInitials = () => {
+    if (!client) return 'AD';
+    const firstName = client.firstName || '';
+    const lastName = client.lastName || '';
+    return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+  };
+
+  // Fonction pour obtenir le nom complet
+  const getFullName = () => {
+    if (!client) return 'Alexandre Dubois';
+    return `${client.firstName || ''} ${client.lastName || ''}`.trim();
+  };
+
+  // Fonction pour masquer l'email
+  const getMaskedEmail = () => {
+    if (!client?.email) return 'a••••••s@email.com';
+    const email = client.email;
+    const [username, domain] = email.split('@');
+    if (username.length <= 2) return email;
+    return `${username.charAt(0)}${'•'.repeat(username.length - 2)}${username.charAt(username.length - 1)}@${domain}`;
+  };
+
+  // Fonction pour masquer le téléphone
+  const getMaskedPhone = () => {
+    if (!client?.phone) return '+33 6 •••• ••90';
+    const phone = client.phone;
+    if (phone.length < 4) return phone;
+    return `${phone.slice(0, -4).replace(/\d/g, '•')}${phone.slice(-2)}`;
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -21,7 +54,10 @@ export default function ProfileScreen() {
         { 
           text: 'Déconnexion', 
           style: 'destructive',
-          onPress: () => router.replace('/(auth)/login')
+          onPress: async () => {
+            await authLogout();
+            router.replace('/(auth)/login');
+          }
         }
       ]
     );
@@ -41,10 +77,10 @@ export default function ProfileScreen() {
         {/* Profile Info */}
         <View style={styles.profileSection}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>AD</Text>
+            <Text style={styles.avatarText}>{getInitials()}</Text>
           </View>
-          <Text style={styles.profileName}>Alexandre Dubois</Text>
-          <Text style={styles.profileId}>ID Client: 742-198-335</Text>
+          <Text style={styles.profileName}>{getFullName()}</Text>
+          <Text style={styles.profileId}>ID Client: {client?.id || '000-000-000'}</Text>
         </View>
 
         {/* Appearance */}
@@ -66,7 +102,7 @@ export default function ProfileScreen() {
               </View>
               <View>
                 <Text style={[styles.menuLabel, { color: colors.text }]}>Nom et Prénom</Text>
-                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>Alexandre Dubois</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>{getFullName()}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
@@ -78,8 +114,10 @@ export default function ProfileScreen() {
                 <Ionicons name="home" size={20} color="#34C759" />
               </View>
               <View>
-                <Text style={styles.menuLabel}>Adresse Postale</Text>
-                <Text style={styles.menuValue}>123 Rue de la République...</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Adresse Postale</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>
+                  {client?.address ? `${client.address.substring(0, 25)}...` : '123 Rue de la République...'}
+                </Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
@@ -91,8 +129,8 @@ export default function ProfileScreen() {
                 <Ionicons name="call" size={20} color="#FF9500" />
               </View>
               <View>
-                <Text style={styles.menuLabel}>Numéro de téléphone</Text>
-                <Text style={styles.menuValue}>+33 6 •••• ••90</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Numéro de téléphone</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>{getMaskedPhone()}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#8E8E93" />
@@ -104,8 +142,8 @@ export default function ProfileScreen() {
                 <Ionicons name="mail" size={20} color="#FF3B30" />
               </View>
               <View>
-                <Text style={styles.menuLabel}>Adresse e-mail</Text>
-                <Text style={styles.menuValue}>a••••••s@email.com</Text>
+                <Text style={[styles.menuLabel, { color: colors.text }]}>Adresse e-mail</Text>
+                <Text style={[styles.menuValue, { color: colors.textSecondary }]}>{getMaskedEmail()}</Text>
               </View>
             </View>
             <Ionicons name="chevron-forward" size={20} color="#8E8E93" />

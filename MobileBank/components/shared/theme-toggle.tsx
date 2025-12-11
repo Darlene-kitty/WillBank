@@ -64,7 +64,7 @@ export function ThemeToggle({ style, variant = 'default' }: ThemeToggleProps) {
         <Animated.View style={[styles.track, trackStyle]}>
           <Animated.View style={[styles.thumb, thumbStyle]}>
             <LinearGradient
-              colors={isDark ? ['#667EEA', '#764BA2'] : ['#FFB800', '#FF9500']}
+              colors={isDark ? ['#667EEA', '#0066FF'] : ['#FFB800', '#FF9500']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.thumbGradient}
@@ -98,7 +98,7 @@ export function ThemeToggle({ style, variant = 'default' }: ThemeToggleProps) {
         <Animated.View style={[styles.track, trackStyle]}>
           <Animated.View style={[styles.thumb, thumbStyle]}>
             <LinearGradient
-              colors={isDark ? ['#667EEA', '#764BA2'] : ['#FFB800', '#FF9500']}
+              colors={isDark ? ['#667EEA', '#0066FF'] : ['#FFB800', '#FF9500']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.thumbGradient}

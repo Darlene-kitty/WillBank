@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
+import { useNotifications } from '@/hooks';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { PremiumCard, PremiumIcon, PremiumBadge } from '@/components/shared';
@@ -21,33 +23,25 @@ interface Notification {
 export default function NotificationsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { client } = useAuthContext();
+  const { notifications: rawNotifications, markAsRead } = useNotifications(client?.email || null);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: 'transaction',
-      title: 'Paiement reçu',
-      message: 'Vous avez reçu 250,00 € de Jane Doe',
-      time: 'Il y a 5 min',
-      read: false,
-      icon: 'arrow-down-circle',
-      colors: ['#34C759', '#28A745'],
-    },
-    {
-      id: 2,
-      type: 'transaction',
-      title: 'Paiement effectué',
-      message: 'Achat chez Apple Store pour 999,00 €',
-      time: 'Il y a 2h',
-      read: false,
-      icon: 'cart',
-      colors: ['#FF3B30', '#CC2E26'],
-    },
-    {
-      id: 3,
-      type: 'security',
-      title: 'Connexion détectée',
+  // Transformer les notifications pour l'affichage
+  const notifications = rawNotifications.map(notif => ({
+    id: notif.id,
+    type: notif.type as 'transaction' | 'security' | 'info' | 'promo',
+    title: notif.title,
+    message: notif.message,
+    time: new Date(notif.createdAt).toLocaleString('fr-FR'),
+    read: notif.read,
+    icon: notif.type === 'TRANSACTION' ? 'swap-horizontal' :
+          notif.type === 'SECURITY' ? 'shield-checkmark' :
+          notif.type === 'SYSTEM' ? 'information-circle' : 'megaphone',
+    colors: notif.type === 'TRANSACTION' ? ['#0066FF', '#0052CC'] :
+            notif.type === 'SECURITY' ? ['#FF3B30', '#CC2E26'] :
+            notif.type === 'SYSTEM' ? ['#34C759', '#28A745'] : ['#FF9500', '#FF6B00']
+  }));
       message: 'Nouvelle connexion depuis iPhone 14 Pro',
       time: 'Hier',
       read: true,
@@ -62,7 +56,7 @@ export default function NotificationsScreen() {
       time: 'Il y a 2 jours',
       read: true,
       icon: 'document-text',
-      colors: ['#667EEA', '#764BA2'],
+      colors: ['#667EEA', '#0066FF'],
     },
     {
       id: 5,
@@ -82,7 +76,7 @@ export default function NotificationsScreen() {
       time: 'Il y a 5 jours',
       read: true,
       icon: 'calendar',
-      colors: ['#667EEA', '#764BA2'],
+      colors: ['#667EEA', '#0066FF'],
     },
   ]);
 

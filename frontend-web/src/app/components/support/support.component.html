@@ -1,0 +1,186 @@
+<div class="app-layout">
+  <app-sidebar></app-sidebar>
+  
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Aide & Support</h1>
+      <p>Trouvez des réponses à vos questions ou contactez notre équipe</p>
+    </div>
+
+    <div class="support-tabs">
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'faq'"
+        (click)="setActiveTab('faq')"
+      >
+        FAQ
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'contact'"
+        (click)="setActiveTab('contact')"
+      >
+        Nous contacter
+      </button>
+      <button 
+        class="tab-button" 
+        [class.active]="activeTab === 'guides'"
+        (click)="setActiveTab('guides')"
+      >
+        Guides
+      </button>
+    </div>
+
+    <!-- FAQ Tab -->
+    <div *ngIf="activeTab === 'faq'" class="tab-content">
+      <div class="faq-section">
+        <h2>Questions fréquemment posées</h2>
+        
+        <div class="faq-list">
+          <div *ngFor="let faq of faqs" class="faq-item">
+            <div class="faq-category">{{ faq.category }}</div>
+            <h3 class="faq-question">{{ faq.question }}</h3>
+            <p class="faq-answer">{{ faq.answer }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Tab -->
+    <div *ngIf="activeTab === 'contact'" class="tab-content">
+      <div class="contact-section">
+        <div class="contact-grid">
+          <!-- Formulaire de contact -->
+          <div class="contact-form-container">
+            <h2>Envoyer un message</h2>
+            
+            <form (ngSubmit)="submitContactForm()" class="contact-form">
+              <div class="form-group">
+                <label for="subject">Sujet *</label>
+                <input 
+                  type="text" 
+                  id="subject" 
+                  [(ngModel)]="contactForm.subject"
+                  name="subject"
+                  class="form-control"
+                  placeholder="Décrivez brièvement votre demande"
+                >
+              </div>
+              
+              <div class="form-group">
+                <label for="priority">Priorité</label>
+                <select 
+                  id="priority" 
+                  [(ngModel)]="contactForm.priority"
+                  name="priority"
+                  class="form-control"
+                >
+                  <option value="low">Faible</option>
+                  <option value="normal">Normale</option>
+                  <option value="high">Élevée</option>
+                  <option value="urgent">Urgente</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea 
+                  id="message" 
+                  [(ngModel)]="contactForm.message"
+                  name="message"
+                  class="form-control"
+                  rows="6"
+                  placeholder="Décrivez votre problème ou votre question en détail"
+                ></textarea>
+              </div>
+              
+              <button type="submit" class="btn btn-primary" [disabled]="loading">
+                <span *ngIf="loading">Envoi en cours...</span>
+                <span *ngIf="!loading">Envoyer le message</span>
+              </button>
+            </form>
+          </div>
+          
+          <!-- Informations de contact -->
+          <div class="contact-info-container">
+            <h2>Autres moyens de contact</h2>
+            
+            <div class="contact-methods">
+              <div class="contact-method">
+                <div class="contact-icon">📞</div>
+                <div class="contact-details">
+                  <h3>Téléphone</h3>
+                  <p>{{ contactInfo.phone }}</p>
+                  <small>{{ contactInfo.hours }}</small>
+                </div>
+              </div>
+              
+              <div class="contact-method">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-details">
+                  <h3>Email</h3>
+                  <p>{{ contactInfo.email }}</p>
+                  <small>Réponse sous 24h</small>
+                </div>
+              </div>
+              
+              <div class="contact-method">
+                <div class="contact-icon">📍</div>
+                <div class="contact-details">
+                  <h3>Adresse</h3>
+                  <p>{{ contactInfo.address }}</p>
+                  <small>Siège social</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Guides Tab -->
+    <div *ngIf="activeTab === 'guides'" class="tab-content">
+      <div class="guides-section">
+        <h2>Guides et tutoriels</h2>
+        
+        <div class="guides-grid">
+          <div class="guide-card">
+            <div class="guide-icon">📖</div>
+            <h3>Guide de démarrage</h3>
+            <p>Apprenez les bases de WillBank et comment utiliser les fonctionnalités principales.</p>
+            <button class="btn btn-outline" (click)="downloadGuide()">
+              Télécharger le guide
+            </button>
+          </div>
+          
+          <div class="guide-card">
+            <div class="guide-icon">💳</div>
+            <h3>Gestion des comptes</h3>
+            <p>Comment créer, gérer et surveiller vos comptes bancaires.</p>
+            <button class="btn btn-outline" (click)="downloadGuide()">
+              Voir le tutoriel
+            </button>
+          </div>
+          
+          <div class="guide-card">
+            <div class="guide-icon">🔒</div>
+            <h3>Sécurité</h3>
+            <p>Bonnes pratiques pour sécuriser votre compte et vos transactions.</p>
+            <button class="btn btn-outline" (click)="downloadGuide()">
+              Lire les conseils
+            </button>
+          </div>
+          
+          <div class="guide-card">
+            <div class="guide-icon">📱</div>
+            <h3>Application mobile</h3>
+            <p>Utilisez WillBank sur votre smartphone avec notre application mobile.</p>
+            <button class="btn btn-outline" (click)="downloadGuide()">
+              Télécharger l'app
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

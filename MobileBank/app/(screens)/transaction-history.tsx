@@ -3,6 +3,8 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, SafeAreaView, Alert } from 'react-native';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
+import { useAccounts, useTransactions } from '@/hooks';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { 
@@ -16,21 +18,28 @@ import {
 export default function TransactionHistoryScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { clientId } = useAuthContext();
+  const { accounts } = useAccounts(clientId);
+  const { transactions: rawTransactions } = useTransactions(accounts[0]?.id);
   const [filter, setFilter] = useState('Tous');
   const [period, setPeriod] = useState('30 derniers jours');
 
-  const transactions = [
-    { id: 1, name: 'Starbucks', amount: -5.50, date: 'Aujourd\'hui', category: 'Restaurant', icon: 'cafe' },
-    { id: 2, name: 'Virement reçu', amount: 250.00, date: 'Aujourd\'hui', category: 'Revenu', icon: 'cash' },
-    { id: 3, name: 'Le Bistrot', amount: -85.30, date: 'Hier', category: 'Restaurant', icon: 'restaurant' },
-    { id: 4, name: 'Retrait DAB', amount: -50.00, date: 'Hier', category: 'Retrait', icon: 'cash' },
-    { id: 5, name: 'Apple Store', amount: -999.00, date: '15 Oct 2023', category: 'Shopping', icon: 'bag-handle' },
-    { id: 6, name: 'Salaire Octobre', amount: 2300.00, date: '15 Oct 2023', category: 'Revenu', icon: 'cash' },
-    { id: 7, name: 'Loyer', amount: -750.00, date: '15 Oct 2023', category: 'Logement', icon: 'home' },
-    { id: 8, name: 'Netflix', amount: -15.99, date: '14 Oct 2023', category: 'Abonnement', icon: 'tv' },
-    { id: 9, name: 'Uber', amount: -12.50, date: '13 Oct 2023', category: 'Transport', icon: 'car' },
-    { id: 10, name: 'Pharmacie', amount: -28.90, date: '12 Oct 2023', category: 'Santé', icon: 'medical' },
-  ];
+  // Transformer les transactions pour l'affichage
+  const transactions = rawTransactions.map(tx => {
+    const isPositive = tx.type === 'DEPOSIT';
+    const displayAmount = isPositive ? tx.amount : -tx.amount;
+    
+    return {
+      id: tx.id,
+      name: tx.description || `Transaction #${tx.id}`,
+      amount: displayAmount,
+      date: new Date(tx.createdAt!).toLocaleDateString('fr-FR'),
+      category: tx.type === 'DEPOSIT' ? 'Revenu' : 
+                tx.type === 'WITHDRAWAL' ? 'Retrait' : 'Virement',
+      icon: tx.type === 'DEPOSIT' ? 'cash' : 
+            tx.type === 'WITHDRAWAL' ? 'cash' : 'swap-horizontal'
+    };
+  });
 
   const filters = ['Tous', 'Revenus', 'Dépenses', 'Shopping', 'Restaurant', 'Transport'];
 
@@ -79,7 +88,7 @@ export default function TransactionHistoryScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Premium Gradient Header */}
       <LinearGradient
-        colors={['#667EEA', '#764BA2']}
+        colors={['#667EEA', '#0066FF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.headerGradient}
@@ -156,7 +165,7 @@ export default function TransactionHistoryScreen() {
               icon="receipt"
               label="Total"
               value={`${transactionCount}`}
-              colors={['#667EEA', '#764BA2']}
+              colors={['#667EEA', '#0066FF']}
               variant="vertical"
               style={styles.statItem}
             />
@@ -218,7 +227,7 @@ export default function TransactionHistoryScreen() {
               >
                 {filter === item ? (
                   <LinearGradient
-                    colors={['#667EEA', '#764BA2']}
+                    colors={['#667EEA', '#0066FF']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
                     style={styles.filterBtnGradient}

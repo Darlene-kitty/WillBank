@@ -77,7 +77,7 @@
     <div class="menu-section">
       <div class="section-title">Autres</div>
       
-      <a href="#" class="menu-item">
+      <a routerLink="/settings" routerLinkActive="active" class="menu-item">
         <div class="menu-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="3" stroke-width="2"/>
@@ -87,7 +87,7 @@
         <span class="menu-label">Paramètres</span>
       </a>
 
-      <a href="#" class="menu-item">
+      <a routerLink="/support" routerLinkActive="active" class="menu-item">
         <div class="menu-icon">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <circle cx="12" cy="12" r="10" stroke-width="2"/>
@@ -101,10 +101,10 @@
 
   <div class="sidebar-footer">
     <div class="user-profile">
-      <div class="user-avatar">AA</div>
+      <div class="user-avatar">{{ getUserInitials() }}</div>
       <div class="user-info">
-        <div class="user-name">Ahmed Alami</div>
-        <div class="user-email">ahmed@willbank.ma</div>
+        <div class="user-name">{{ getUserName() }}</div>
+        <div class="user-email">{{ getUserEmail() }}</div>
       </div>
     </div>
     

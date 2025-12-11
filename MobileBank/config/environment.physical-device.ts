@@ -1,52 +1,37 @@
 /**
- * Configuration des environnements pour WillBank Mobile
- * URLs directes vers les microservices (sans passer par la gateway)
+ * Configuration pour appareil physique
+ * Copiez ce fichier vers environment.ts pour tester sur un appareil physique
  */
 
 import { Platform } from 'react-native';
 
-// Détection de l'environnement de développement
 const isDev = __DEV__;
 
-// Base URL pour Android emulator: 10.0.2.2 -> localhost de la machine hôte
-// Pour iOS simulator: localhost fonctionne directement
-// Pour Web: localhost fonctionne directement
-// Pour device physique: utiliser l'IP de la machine (ex: 192.168.1.x)
 const getDevHost = () => {
   if (Platform.OS === 'web') {
     return 'localhost';
-  } else if (Platform.OS === 'android') {
-    // Pour émulateur Android: 10.0.2.2 pointe vers localhost de la machine hôte
-    // Pour appareil physique: utiliser l'IP réelle de la machine
-    return '10.0.2.2'; // Émulateur Android
-    return '172.17.8.245'; // Décommentez pour appareil physique
   } else {
-    // iOS Simulator peut utiliser localhost directement
-    return 'localhost';
+    // IP réelle de votre machine pour appareil physique
+    return '172.17.8.245';
   }
 };
 
 const DEV_HOST = getDevHost();
 
-// Configuration des URLs des microservices
 export const API_CONFIG = {
-  // Client Service - Authentification et gestion des clients
   CLIENT_SERVICE: {
     BASE_URL: isDev ? `http://${DEV_HOST}:8081` : 'https://client-api.willbank.com',
     ENDPOINTS: {
-      // Auth endpoints
       LOGIN: '/api/auth/login',
       REGISTER: '/api/auth/register',
       REFRESH_TOKEN: '/api/auth/refresh',
       CHANGE_PASSWORD: '/api/auth/change-password',
       ME: '/api/auth/me',
-      // Client endpoints
       CLIENTS: '/api/clients',
       CLIENT_BY_ID: (id: number) => `/api/clients/${id}`,
     },
   },
 
-  // Account Service - Gestion des comptes bancaires
   ACCOUNT_SERVICE: {
     BASE_URL: isDev ? `http://${DEV_HOST}:8082` : 'https://account-api.willbank.com',
     ENDPOINTS: {
@@ -60,7 +45,6 @@ export const API_CONFIG = {
     },
   },
 
-  // Transaction Service - Gestion des transactions
   TRANSACTION_SERVICE: {
     BASE_URL: isDev ? `http://${DEV_HOST}:8083` : 'https://transaction-api.willbank.com',
     ENDPOINTS: {
@@ -72,7 +56,6 @@ export const API_CONFIG = {
     },
   },
 
-  // Notification Service - Gestion des notifications
   NOTIFICATION_SERVICE: {
     BASE_URL: isDev ? `http://${DEV_HOST}:8084` : 'https://notification-api.willbank.com',
     ENDPOINTS: {
@@ -81,7 +64,6 @@ export const API_CONFIG = {
     },
   },
 
-  // Dashboard Composite Service - Données agrégées
   DASHBOARD_SERVICE: {
     BASE_URL: isDev ? `http://${DEV_HOST}:8085` : 'https://dashboard-api.willbank.com',
     ENDPOINTS: {
@@ -91,11 +73,10 @@ export const API_CONFIG = {
   },
 };
 
-// Configuration globale
 export const APP_CONFIG = {
   APP_NAME: 'WillBank',
   VERSION: '1.0.0',
-  TIMEOUT: 15000, // 15 secondes
+  TIMEOUT: 15000,
   RETRY_ATTEMPTS: 3,
   TOKEN_KEY: 'authToken',
   REFRESH_TOKEN_KEY: 'refreshToken',

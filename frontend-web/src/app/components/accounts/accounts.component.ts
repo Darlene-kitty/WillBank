@@ -60,6 +60,11 @@ export class AccountsComponent implements OnInit {
   ngOnInit(): void {
     this.loadAccounts();
     this.loadClients();
+    
+    // Rafraîchissement automatique toutes les 30 secondes
+    setInterval(() => {
+      this.loadAccounts();
+    }, 30000);
   }
 
   loadAccounts(): void {

@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView, Alert } fr
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
+import { useAccounts, useTransactions } from '@/hooks';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { 
@@ -19,17 +21,37 @@ export default function AccountDetailsScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams();
   const { colors } = useTheme();
+  const { clientId } = useAuthContext();
+  const { accounts, getAccountById } = useAccounts(clientId);
   const [balanceVisible, setBalanceVisible] = useState(true);
 
-  // Déterminer le type de compte selon l'ID
+  // Récupérer le compte par ID
   const accountId = typeof id === 'string' ? parseInt(id) : 1;
-  const isCheckingAccount = accountId === 1; // 1 = Courant, 2 = Épargne
-
-  // Mock data - à remplacer par les vraies données
-  const accountData = isCheckingAccount ? {
+  const account = getAccountById(accountId);
+  
+  // Si le compte n'est pas trouvé, utiliser des données par défaut
+  const accountData = account ? {
+    name: account.accountType === 'CHECKING' ? 'Compte Courant' : 
+          account.accountType === 'SAVINGS' ? 'Compte Épargne' : 'Compte Business',
+    number: `**** ${account.accountNumber.slice(-4)}`,
+    balance: account.balance,
+    iban: `FR76 3000 6000 0112 3456 7890 ${account.id.toString().padStart(3, '0')}`,
+    bic: 'BNPAFRPPXXX',
+    status: account.status === 'ACTIVE' ? 'Actif' : 
+            account.status === 'SUSPENDED' ? 'Suspendu' : 'Fermé',
+    openDate: new Date(account.createdAt!).toLocaleDateString('fr-FR', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    }),
+    type: account.accountType === 'CHECKING' ? 'Compte Courant' : 
+          account.accountType === 'SAVINGS' ? 'Compte Épargne' : 'Compte Business',
+    interestRate: account.accountType === 'SAVINGS' ? 3.5 : null,
+    monthlyDeposit: account.accountType === 'SAVINGS' ? 200.00 : null,
+  } : {
     name: 'Compte Courant',
     number: '**** 1234',
-    balance: 10110.00,
+    balance: 0,
     iban: 'FR76 3000 6000 0112 3456 7890 189',
     bic: 'BNPAFRPPXXX',
     status: 'Actif',
@@ -37,17 +59,6 @@ export default function AccountDetailsScreen() {
     type: 'Compte Courant',
     interestRate: null,
     monthlyDeposit: null,
-  } : {
-    name: 'Épargne Premium',
-    number: '**** 5678',
-    balance: 5120.50,
-    iban: 'FR76 3000 6000 0112 3456 7890 190',
-    bic: 'BNPAFRPPXXX',
-    status: 'Actif',
-    openDate: '20 Mars 2021',
-    type: 'Compte Épargne',
-    interestRate: 3.5, // Taux d'intérêt annuel
-    monthlyDeposit: 200.00, // Dépôt mensuel moyen
   };
 
   const recentTransactions = isCheckingAccount ? [
@@ -162,7 +173,7 @@ export default function AccountDetailsScreen() {
                   icon="trending-up"
                   label="Taux d'intérêt"
                   value={`${accountData.interestRate}% / an`}
-                  colors={['#667EEA', '#764BA2']}
+                  colors={['#667EEA', '#0066FF']}
                   variant="vertical"
                   style={styles.statItem}
                 />
@@ -248,7 +259,7 @@ export default function AccountDetailsScreen() {
                 ]}
               >
                 <LinearGradient
-                  colors={['#667EEA', '#764BA2']}
+                  colors={['#667EEA', '#0066FF']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={styles.actionBtnGradient}
