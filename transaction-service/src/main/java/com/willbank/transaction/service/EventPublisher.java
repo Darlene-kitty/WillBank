@@ -33,22 +33,38 @@ public class EventPublisher {
     private String clientUpdatedRoutingKey;
     
     public void publishTransactionCreated(TransactionCreatedEvent event) {
-        log.info("Publishing TransactionCreatedEvent: {}", event);
-        rabbitTemplate.convertAndSend(exchangeName, transactionCreatedRoutingKey, event);
+        try {
+            log.info("Publishing TransactionCreatedEvent: {}", event);
+            rabbitTemplate.convertAndSend(exchangeName, transactionCreatedRoutingKey, event);
+        } catch (Exception e) {
+            log.warn("Failed to publish TransactionCreatedEvent, RabbitMQ may not be available: {}", e.getMessage());
+        }
     }
     
     public void publishAccountCredited(AccountCreditedEvent event) {
-        log.info("Publishing AccountCreditedEvent: {}", event);
-        rabbitTemplate.convertAndSend(exchangeName, accountCreditedRoutingKey, event);
+        try {
+            log.info("Publishing AccountCreditedEvent: {}", event);
+            rabbitTemplate.convertAndSend(exchangeName, accountCreditedRoutingKey, event);
+        } catch (Exception e) {
+            log.warn("Failed to publish AccountCreditedEvent, RabbitMQ may not be available: {}", e.getMessage());
+        }
     }
     
     public void publishAccountDebited(AccountDebitedEvent event) {
-        log.info("Publishing AccountDebitedEvent: {}", event);
-        rabbitTemplate.convertAndSend(exchangeName, accountDebitedRoutingKey, event);
+        try {
+            log.info("Publishing AccountDebitedEvent: {}", event);
+            rabbitTemplate.convertAndSend(exchangeName, accountDebitedRoutingKey, event);
+        } catch (Exception e) {
+            log.warn("Failed to publish AccountDebitedEvent, RabbitMQ may not be available: {}", e.getMessage());
+        }
     }
     
     public void publishClientUpdated(ClientUpdatedEvent event) {
-        log.info("Publishing ClientUpdatedEvent: {}", event);
-        rabbitTemplate.convertAndSend(exchangeName, clientUpdatedRoutingKey, event);
+        try {
+            log.info("Publishing ClientUpdatedEvent: {}", event);
+            rabbitTemplate.convertAndSend(exchangeName, clientUpdatedRoutingKey, event);
+        } catch (Exception e) {
+            log.warn("Failed to publish ClientUpdatedEvent, RabbitMQ may not be available: {}", e.getMessage());
+        }
     }
 }

@@ -595,6 +595,29 @@ http://localhost:8761
 ### RabbitMQ Management
 http://localhost:15672 (guest/guest)
 
+**Configuration RabbitMQ :**
+- **Service Status** : ✅ En cours d'exécution
+- **Exchange** : `willbank.events` (topic exchange)
+- **Queue** : `willbank.notifications`
+- **Routing Pattern** : `willbank.events.#`
+- **Connexion** : localhost:5672 (guest/guest)
+
+**Architecture des messages :**
+1. **Transaction Service** publie les événements sur `willbank.events`
+2. **Notification Service** consomme via la queue `willbank.notifications`
+3. **4 types d'événements** : transaction créée, compte crédité/débité, client mis à jour
+
+**Vérification du statut :**
+```bash
+# Windows - Vérifier le service
+Get-Service | Where-Object {$_.Name -like "*rabbit*"}
+
+# Accès interface web
+http://localhost:15672
+Username: guest
+Password: guest
+```
+
 ## 🎓 Points Clés pour la Notation
 
 ### Architecture (5/20)

@@ -109,7 +109,14 @@ mobile-bank/android
 # Application specific
 application-local.yml
 application-dev.yml
+application-prod.yml
 *.pid
 
+# Email configuration (security)
+**/application-prod.yml
+gmail-credentials.txt
+
+# Firebase and notification secrets
 client-service/src/main/resources/serviceAccountKey.json
 **/serviceAccountKey.json
+**/firebase-adminsdk-*.json

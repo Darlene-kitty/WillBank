@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/transactions")
 @RequiredArgsConstructor
+@CrossOrigin(origins = {"http://localhost:4200", "http://127.0.0.1:4200"})
 @Tag(name = "Transaction Management", description = "APIs for managing bank transactions")
 public class TransactionController {
     

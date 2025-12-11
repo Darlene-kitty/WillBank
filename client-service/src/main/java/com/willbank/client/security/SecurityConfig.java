@@ -45,7 +45,8 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/actuator/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/internal/**"  // Allow internal service calls
                         ).permitAll()
                         .requestMatchers("/api/clients/**").hasAnyRole("CLIENT", "ADMIN", "AGENT")
                         .anyRequest().authenticated()
