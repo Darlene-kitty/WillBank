@@ -16,10 +16,17 @@ const getDevHost = () => {
   if (Platform.OS === 'web') {
     return 'localhost';
   } else if (Platform.OS === 'android') {
-    // Pour émulateur Android: 10.0.2.2 pointe vers localhost de la machine hôte
-    // Pour appareil physique: utiliser l'IP réelle de la machine
-    return '10.0.2.2'; // Émulateur Android
-    return '172.17.8.245'; // Décommentez pour appareil physique
+    // IMPORTANT: Changez selon votre environnement
+    // Pour émulateur Android: utilisez '10.0.2.2'
+    // Pour appareil physique: utilisez votre IP locale (ex: '192.168.43.26')
+    // Pour Expo Go sur appareil physique: utilisez votre IP locale
+    const USE_PHYSICAL_DEVICE = false; // Changez à true si vous testez sur un appareil physique
+    
+    if (USE_PHYSICAL_DEVICE) {
+      return '192.168.43.26'; // Votre IP locale (modifiez selon votre réseau)
+    } else {
+      return '10.0.2.2'; // Émulateur Android
+    }
   } else {
     // iOS Simulator peut utiliser localhost directement
     return 'localhost';

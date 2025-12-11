@@ -9,6 +9,8 @@ interface RetryConfig extends InternalAxiosRequestConfig {
 
 // Création d'une instance Axios pour chaque microservice
 const createApiInstance = (baseURL: string): AxiosInstance => {
+  console.log('Creating API instance with baseURL:', baseURL);
+  
   const instance = axios.create({
     baseURL,
     timeout: APP_CONFIG.TIMEOUT,
@@ -38,6 +40,27 @@ const createApiInstance = (baseURL: string): AxiosInstance => {
   instance.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
+      // Log détaillé pour le débogage
+      if (error.response) {
+        // Le serveur a répondu avec un code d'erreur
+        console.error('API Error Response:', {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+        });
+      } else if (error.request) {
+        // La requête a été faite mais aucune réponse reçue
+        console.error('API Network Error - No Response:', {
+          message: error.message,
+          baseURL: instance.defaults.baseURL,
+          url: error.config?.url,
+          method: error.config?.method,
+        });
+      } else {
+        // Erreur lors de la configuration de la requête
+        console.error('API Request Setup Error:', error.message);
+      }
+
       const originalRequest = error.config as RetryConfig;
 
       if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
