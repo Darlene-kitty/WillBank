@@ -1,0 +1,122 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# NetBeans
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Mobile dependencies
+# dependencies
+mobile-bank/node_modules/
+
+# Expo
+mobile-bank/.expo/
+mobile-bank/dist/
+mobile-bank/web-build/
+mobile-bank/expo-env.d.ts
+
+# Native
+mobile-bank/.kotlin/
+mobile-bank/*.orig.*
+mobile-bank/*.jks
+mobile-bank/*.p8
+mobile-bank/*.p12
+mobile-bank/*.key
+mobile-bank/*.mobileprovision
+
+# Metro
+mobile-bank/.metro-health-check*
+
+# debug
+mobile-bank/npm-debug.*
+mobile-bank/yarn-debug.*
+mobile-bank/yarn-error.*
+
+# macOS
+mobile-bank/.DS_Store
+mobile-bank/*.pem
+
+# local env files
+mobile-bank/.env*.local
+
+# typescript
+mobile-bank/*.tsbuildinfo
+
+mobile-bank/app-example
+
+# generated native folders
+mobile-bank/ios
+mobile-bank/android
+
+# Application specific
+application-local.yml
+application-dev.yml
+application-prod.yml
+*.pid
+
+# Email configuration (security)
+**/application-prod.yml
+gmail-credentials.txt
+
+# Firebase and notification secrets
+client-service/src/main/resources/serviceAccountKey.json
+**/serviceAccountKey.json
+**/firebase-adminsdk-*.json

@@ -1,0 +1,42 @@
+<div class="pagination-container">
+  <div class="pagination-info">
+    <span>Affichage de {{ startItem }} à {{ endItem }} sur {{ totalItems }} résultats</span>
+  </div>
+  
+  <nav class="pagination">
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === 1"
+      (click)="previousPage()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Précédent
+    </button>
+
+    <div class="pagination-pages">
+      @for (page of pages; track page) {
+        @if (page === -1) {
+          <span class="pagination-ellipsis">...</span>
+        } @else {
+          <button 
+            class="pagination-page"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        }
+      }
+    </div>
+
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === totalPages"
+      (click)="nextPage()">
+      Suivant
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  </nav>
+</div>

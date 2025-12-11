@@ -1,0 +1,493 @@
+<div class="clients-page">
+  <app-sidebar></app-sidebar>
+
+  <div class="clients-content">
+    <div class="page-header">
+      <div class="header-left">
+        <div class="brand-info">
+          <h1>WillBank CRM</h1>
+          <p class="subtitle">Back Office</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="search-box">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" placeholder="Rechercher par nom, email, CIN..." [(ngModel)]="searchTerm" (input)="onSearch()">
+        </div>
+        <button class="icon-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+        <div class="user-avatar">U</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Gestion des Clients</h2>
+
+    <!-- Statistiques -->
+    @if (!loading && stats) {
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Clients Totaux</span>
+          </div>
+          <div class="stat-value">{{ stats.totalClients | number:'1.0-0':'fr' }}</div>
+          <div class="stat-trend positive">+5.2%</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Clients Actifs</span>
+          </div>
+          <div class="stat-value">{{ stats.activeClients | number:'1.0-0':'fr' }}</div>
+          <div class="stat-trend positive">+2.1%</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-label">Nouveaux ce mois</span>
+          </div>
+          <div class="stat-value">{{ stats.newThisMonth | number:'1.0-0':'fr' }}</div>
+          <div class="stat-trend positive">+12.5%</div>
+        </div>
+
+        <div class="stat-card highlight">
+          <div class="stat-header">
+            <span class="stat-label">Total Comptes</span>
+          </div>
+          <div class="stat-value">{{ stats.totalAccounts | number:'1.0-0':'fr' }}</div>
+          <div class="stat-trend positive">+3.8%</div>
+        </div>
+      </div>
+    }
+
+    @if (loading) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Chargement des clients...</p>
+      </div>
+    }
+
+    @if (error && !loading) {
+      <div class="alert alert-error">{{ error }}</div>
+    }
+
+    @if (!loading && clients.length > 0) {
+      <!-- Filtres et Actions -->
+      <div class="table-controls">
+        <div class="filters">
+          <div class="filter-group">
+            <label>Statut:</label>
+            <select [(ngModel)]="statusFilter" (change)="applyFilters()" class="filter-select">
+              <option value="ALL">Tous</option>
+              <option value="ACTIVE">Actif</option>
+              <option value="INACTIVE">Inactif</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn-icon" title="Télécharger">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </button>
+          <button class="btn-icon" title="Imprimer">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+          </button>
+          <button class="btn btn-primary" (click)="openCreateModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Ajouter un client
+          </button>
+        </div>
+      </div>
+
+      <!-- Tableau -->
+      <div class="table-container">
+        <table class="clients-table">
+          <thead>
+            <tr>
+              <th class="checkbox-col">
+                <input type="checkbox" [checked]="isAllSelected()" (change)="toggleSelectAll()">
+              </th>
+              <th>NOM COMPLET</th>
+              <th>EMAIL</th>
+              <th>TÉLÉPHONE</th>
+              <th>CIN</th>
+              <th>ADRESSE</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (client of paginatedClients; track client.id) {
+              <tr>
+                <td class="checkbox-col">
+                  <input type="checkbox" 
+                    [checked]="client.id && selectedClients.has(client.id)" 
+                    (change)="toggleSelectClient(client.id!)">
+                </td>
+                <td class="client-name-cell">
+                  <div class="client-avatar">
+                    {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
+                  </div>
+                  <span>{{ client.firstName }} {{ client.lastName }}</span>
+                </td>
+                <td>{{ client.email }}</td>
+                <td>{{ client.phone }}</td>
+                <td class="cin-cell">{{ client.cin }}</td>
+                <td class="address-cell">{{ client.address }}</td>
+                <td class="actions-col">
+                  <button class="btn-action" title="Plus d'actions" (click)="openEditModal(client)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="12" cy="12" r="1"/>
+                      <circle cx="12" cy="5" r="1"/>
+                      <circle cx="12" cy="19" r="1"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        <div class="pagination-info">
+          Affichage de {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, filteredClients.length) }} sur {{ filteredClients.length }} résultats
+        </div>
+        <div class="pagination-controls">
+          <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          
+          @for (page of getPageNumbers(); track page) {
+            @if (page === -1) {
+              <span class="pagination-ellipsis">...</span>
+            } @else {
+              <button class="pagination-btn" 
+                [class.active]="page === currentPage" 
+                (click)="goToPage(page)">
+                {{ page }}
+              </button>
+            }
+          }
+          
+          <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (!loading && clients.length === 0) {
+      <div class="empty-state">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        <h3>Aucun client</h3>
+        <p>Ajoutez votre premier client</p>
+        <button class="btn btn-primary" (click)="openCreateModal()">Ajouter un client</button>
+      </div>
+    }
+    <!-- Modal Créer/Modifier Client -->
+    @if (showModal) {
+      <div class="modal-overlay" (click)="closeModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <div class="modal-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h2>{{ modalMode === 'create' ? 'Nouveau client' : 'Modifier le client' }}</h2>
+            <p class="modal-subtitle">Remplissez les informations du client</p>
+            <button class="modal-close" (click)="closeModal()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <form (ngSubmit)="onSubmit()" class="modal-body">
+            @if (error) {
+              <div class="alert alert-error">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                {{ error }}
+              </div>
+            }
+
+            <!-- Informations personnelles -->
+            <div class="form-section">
+              <h3 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Informations personnelles
+              </h3>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Prénom *
+                  </label>
+                  <input 
+                    type="text" 
+                    id="firstName" 
+                    name="firstName" 
+                    [(ngModel)]="currentClient.firstName" 
+                    class="form-control" 
+                    placeholder="Jean"
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label for="lastName">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    Nom *
+                  </label>
+                  <input 
+                    type="text" 
+                    id="lastName" 
+                    name="lastName" 
+                    [(ngModel)]="currentClient.lastName" 
+                    class="form-control" 
+                    placeholder="Dupont"
+                    required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="cin">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                  CIN *
+                </label>
+                <input 
+                  type="text" 
+                  id="cin" 
+                  name="cin" 
+                  [(ngModel)]="currentClient.cin" 
+                  class="form-control" 
+                  placeholder="AB123456"
+                  required>
+              </div>
+            </div>
+
+            <!-- Informations de contact -->
+            <div class="form-section">
+              <h3 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22 6 12 13 2 6"/>
+                </svg>
+                Informations de contact
+              </h3>
+
+              <div class="form-group">
+                <label for="email">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22 6 12 13 2 6"/>
+                  </svg>
+                  Email *
+                </label>
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  [(ngModel)]="currentClient.email" 
+                  class="form-control" 
+                  placeholder="jean.dupont@example.com"
+                  required>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="phone">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    Téléphone *
+                  </label>
+                  <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    [(ngModel)]="currentClient.phone" 
+                    class="form-control" 
+                    placeholder="+212 6 12 34 56 78"
+                    required>
+                </div>
+
+                <div class="form-group">
+                  <label for="status">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M9 12l2 2 4-4"/>
+                    </svg>
+                    Statut *
+                  </label>
+                  <select id="status" name="status" [(ngModel)]="currentClient.status" class="form-control" required>
+                    <option value="ACTIVE">Actif</option>
+                    <option value="PENDING">En attente</option>
+                    <option value="BLOCKED">Bloqué</option>
+                    <option value="SUSPENDED">Suspendu</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="address">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  Adresse *
+                </label>
+                <textarea 
+                  id="address" 
+                  name="address" 
+                  [(ngModel)]="currentClient.address" 
+                  class="form-control" 
+                  placeholder="123 Rue de la Paix, Casablanca"
+                  rows="3"
+                  required></textarea>
+              </div>
+            </div>
+
+            <!-- Informations système -->
+            <div class="form-section">
+              <h3 class="section-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                Paramètres système
+              </h3>
+
+              <div class="form-group">
+                <label for="role">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="8.5" cy="7" r="4"/>
+                    <path d="M20 8v6"/>
+                    <path d="M23 11h-6"/>
+                  </svg>
+                  Rôle
+                </label>
+                <select id="role" name="role" [(ngModel)]="currentClient.role" class="form-control">
+                  <option value="CLIENT">Client</option>
+                  <option value="AGENT">Agent</option>
+                  <option value="ADMIN">Administrateur</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="modal-footer">
+              <button type="button" class="btn btn-outline" (click)="closeModal()" [disabled]="submitting">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Annuler
+              </button>
+              <button type="submit" class="btn btn-primary" [disabled]="submitting">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M20 6L9 17l-5-5"/>
+                </svg>
+                {{ submitting ? 'Enregistrement...' : 'Enregistrer' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Modal Supprimer -->
+    @if (showDeleteModal) {
+      <div class="modal-overlay" (click)="closeDeleteModal()">
+        <div class="modal modal-sm" (click)="$event.stopPropagation()">
+          <div class="modal-header danger">
+            <div class="modal-icon danger">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+            </div>
+            <h2>Confirmer la suppression</h2>
+            <p class="modal-subtitle">Cette action est irréversible</p>
+            <button class="modal-close" (click)="closeDeleteModal()">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="modal-body">
+            <p>Êtes-vous sûr de vouloir supprimer ce client ?</p>
+            <div class="client-info">
+              <strong>{{ clientToDelete?.firstName }} {{ clientToDelete?.lastName }}</strong>
+              <span class="client-email">{{ clientToDelete?.email }}</span>
+            </div>
+            <p class="warning-text">Toutes les données associées seront définitivement perdues.</p>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" (click)="closeDeleteModal()" [disabled]="submitting">
+              Annuler
+            </button>
+            <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="submitting">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+              {{ submitting ? 'Suppression...' : 'Supprimer' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
