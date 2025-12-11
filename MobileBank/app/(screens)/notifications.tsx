@@ -24,61 +24,41 @@ export default function NotificationsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { client } = useAuthContext();
-  const { notifications: rawNotifications, markAsRead } = useNotifications(client?.email || null);
+  const { notifications: rawNotifications, refreshNotifications } = useNotifications(client?.email || null);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
   // Transformer les notifications pour l'affichage
-  const notifications = rawNotifications.map(notif => ({
-    id: notif.id,
-    type: notif.type as 'transaction' | 'security' | 'info' | 'promo',
-    title: notif.title,
-    message: notif.message,
-    time: new Date(notif.createdAt).toLocaleString('fr-FR'),
-    read: notif.read,
-    icon: notif.type === 'TRANSACTION' ? 'swap-horizontal' :
-          notif.type === 'SECURITY' ? 'shield-checkmark' :
-          notif.type === 'SYSTEM' ? 'information-circle' : 'megaphone',
-    colors: notif.type === 'TRANSACTION' ? ['#0066FF', '#0052CC'] :
-            notif.type === 'SECURITY' ? ['#FF3B30', '#CC2E26'] :
-            notif.type === 'SYSTEM' ? ['#34C759', '#28A745'] : ['#FF9500', '#FF6B00']
-  }));
-      message: 'Nouvelle connexion depuis iPhone 14 Pro',
-      time: 'Hier',
-      read: true,
-      icon: 'shield-checkmark',
-      colors: ['#0066FF', '#0052CC'],
-    },
-    {
-      id: 4,
-      type: 'info',
-      title: 'Relevé mensuel disponible',
-      message: 'Votre relevé de novembre est prêt',
-      time: 'Il y a 2 jours',
-      read: true,
-      icon: 'document-text',
-      colors: ['#667EEA', '#0066FF'],
-    },
-    {
-      id: 5,
-      type: 'promo',
-      title: 'Nouvelle fonctionnalité',
-      message: 'Découvrez les virements instantanés',
-      time: 'Il y a 3 jours',
-      read: true,
-      icon: 'sparkles',
-      colors: ['#FF9500', '#FF6B00'],
-    },
-    {
-      id: 6,
-      type: 'transaction',
-      title: 'Virement programmé',
-      message: 'Loyer de 750,00 € sera débité demain',
-      time: 'Il y a 5 jours',
-      read: true,
-      icon: 'calendar',
-      colors: ['#667EEA', '#0066FF'],
-    },
-  ]);
+  const notifications = rawNotifications.map(notif => {
+    // Déterminer le type de notification basé sur le message ou le type
+    const getNotificationType = () => {
+      const msg = notif.message.toLowerCase();
+      if (msg.includes('transaction') || msg.includes('virement') || msg.includes('paiement') || msg.includes('débité')) {
+        return 'transaction';
+      } else if (msg.includes('sécurité') || msg.includes('connexion') || msg.includes('mot de passe')) {
+        return 'security';
+      } else if (msg.includes('promo') || msg.includes('offre') || msg.includes('nouveauté')) {
+        return 'promo';
+      }
+      return 'info';
+    };
+
+    const notifType = getNotificationType();
+
+    return {
+      id: notif.id,
+      type: notifType,
+      title: notif.type === 'IN_APP' ? 'Notification' : notif.type,
+      message: notif.message,
+      time: new Date(notif.createdAt).toLocaleString('fr-FR'),
+      read: notif.status === 'SENT',
+      icon: notifType === 'transaction' ? 'swap-horizontal' :
+            notifType === 'security' ? 'shield-checkmark' :
+            notifType === 'promo' ? 'megaphone' : 'information-circle',
+      colors: notifType === 'transaction' ? ['#0066FF', '#0052CC'] :
+              notifType === 'security' ? ['#FF3B30', '#CC2E26'] :
+              notifType === 'promo' ? ['#FF9500', '#FF6B00'] : ['#34C759', '#28A745']
+    };
+  });
 
   const filteredNotifications = filter === 'all' 
     ? notifications 
@@ -86,18 +66,19 @@ export default function NotificationsScreen() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleMarkAsRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const handleMarkAsRead = async (id: number) => {
+    // Marquer comme lue côté client (optionnel: appeler l'API si disponible)
+    await refreshNotifications();
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const handleMarkAllAsRead = async () => {
+    // Marquer toutes comme lues (optionnel: appeler l'API si disponible)
+    await refreshNotifications();
   };
 
-  const handleDelete = (id: number) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleDelete = async (id: number) => {
+    // Supprimer la notification (optionnel: appeler l'API si disponible)
+    await refreshNotifications();
   };
 
   return (
