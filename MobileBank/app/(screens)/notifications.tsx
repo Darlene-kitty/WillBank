@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, ScrollView, Pressable, SafeAreaView } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
+import { useNotifications } from '@/hooks';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { PremiumCard, PremiumIcon, PremiumBadge } from '@/components/shared';
@@ -21,70 +23,42 @@ interface Notification {
 export default function NotificationsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { client } = useAuthContext();
+  const { notifications: rawNotifications, refreshNotifications } = useNotifications(client?.email || null);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: 1,
-      type: 'transaction',
-      title: 'Paiement reçu',
-      message: 'Vous avez reçu 250,00 € de Jane Doe',
-      time: 'Il y a 5 min',
-      read: false,
-      icon: 'arrow-down-circle',
-      colors: ['#34C759', '#28A745'],
-    },
-    {
-      id: 2,
-      type: 'transaction',
-      title: 'Paiement effectué',
-      message: 'Achat chez Apple Store pour 999,00 €',
-      time: 'Il y a 2h',
-      read: false,
-      icon: 'cart',
-      colors: ['#FF3B30', '#CC2E26'],
-    },
-    {
-      id: 3,
-      type: 'security',
-      title: 'Connexion détectée',
-      message: 'Nouvelle connexion depuis iPhone 14 Pro',
-      time: 'Hier',
-      read: true,
-      icon: 'shield-checkmark',
-      colors: ['#0066FF', '#0052CC'],
-    },
-    {
-      id: 4,
-      type: 'info',
-      title: 'Relevé mensuel disponible',
-      message: 'Votre relevé de novembre est prêt',
-      time: 'Il y a 2 jours',
-      read: true,
-      icon: 'document-text',
-      colors: ['#667EEA', '#764BA2'],
-    },
-    {
-      id: 5,
-      type: 'promo',
-      title: 'Nouvelle fonctionnalité',
-      message: 'Découvrez les virements instantanés',
-      time: 'Il y a 3 jours',
-      read: true,
-      icon: 'sparkles',
-      colors: ['#FF9500', '#FF6B00'],
-    },
-    {
-      id: 6,
-      type: 'transaction',
-      title: 'Virement programmé',
-      message: 'Loyer de 750,00 € sera débité demain',
-      time: 'Il y a 5 jours',
-      read: true,
-      icon: 'calendar',
-      colors: ['#667EEA', '#764BA2'],
-    },
-  ]);
+  // Transformer les notifications pour l'affichage
+  const notifications = rawNotifications.map(notif => {
+    // Déterminer le type de notification basé sur le message ou le type
+    const getNotificationType = () => {
+      const msg = notif.message.toLowerCase();
+      if (msg.includes('transaction') || msg.includes('virement') || msg.includes('paiement') || msg.includes('débité')) {
+        return 'transaction';
+      } else if (msg.includes('sécurité') || msg.includes('connexion') || msg.includes('mot de passe')) {
+        return 'security';
+      } else if (msg.includes('promo') || msg.includes('offre') || msg.includes('nouveauté')) {
+        return 'promo';
+      }
+      return 'info';
+    };
+
+    const notifType = getNotificationType();
+
+    return {
+      id: notif.id,
+      type: notifType,
+      title: notif.type === 'IN_APP' ? 'Notification' : notif.type,
+      message: notif.message,
+      time: new Date(notif.createdAt).toLocaleString('fr-FR'),
+      read: notif.status === 'SENT',
+      icon: notifType === 'transaction' ? 'swap-horizontal' :
+            notifType === 'security' ? 'shield-checkmark' :
+            notifType === 'promo' ? 'megaphone' : 'information-circle',
+      colors: notifType === 'transaction' ? ['#0066FF', '#0052CC'] :
+              notifType === 'security' ? ['#FF3B30', '#CC2E26'] :
+              notifType === 'promo' ? ['#FF9500', '#FF6B00'] : ['#34C759', '#28A745']
+    };
+  });
 
   const filteredNotifications = filter === 'all' 
     ? notifications 
@@ -92,18 +66,19 @@ export default function NotificationsScreen() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleMarkAsRead = (id: number) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const handleMarkAsRead = async (id: number) => {
+    // Marquer comme lue côté client (optionnel: appeler l'API si disponible)
+    await refreshNotifications();
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const handleMarkAllAsRead = async () => {
+    // Marquer toutes comme lues (optionnel: appeler l'API si disponible)
+    await refreshNotifications();
   };
 
-  const handleDelete = (id: number) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+  const handleDelete = async (id: number) => {
+    // Supprimer la notification (optionnel: appeler l'API si disponible)
+    await refreshNotifications();
   };
 
   return (

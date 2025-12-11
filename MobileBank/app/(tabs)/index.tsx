@@ -252,7 +252,7 @@ export default function DashboardScreen() {
                 number={`**** ${account.accountNumber.slice(-4)}`}
                 balance={account.balance}
                 icon={account.accountType === 'CHECKING' ? 'card' : 'wallet'}
-                colors={account.accountType === 'CHECKING' ? ['#0066FF', '#0052CC'] : ['#667EEA', '#764BA2']}
+                colors={account.accountType === 'CHECKING' ? ['#0066FF', '#0052CC'] : ['#667EEA', '#0066FF']}
                 balanceVisible={balanceVisible}
                 onPress={() => router.push(`/(screens)/account-details?id=${account.id}` as any)}
                 delay={200 + index * 100}
@@ -297,7 +297,7 @@ export default function DashboardScreen() {
             onPress={() => router.push('/statistics' as any)}
           >
             <LinearGradient
-              colors={['#667EEA', '#764BA2']}
+              colors={['#667EEA', '#0066FF']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.actionBtnGradient}

@@ -1,6 +1,8 @@
 package com.willbank.account.service;
 
+import com.willbank.account.client.ClientClient;
 import com.willbank.account.dto.AccountDTO;
+import com.willbank.account.dto.ClientDTO;
 import com.willbank.account.entity.Account;
 import com.willbank.account.exception.AccountNotFoundException;
 import com.willbank.account.exception.InsufficientBalanceException;
@@ -23,6 +25,8 @@ import java.util.stream.Collectors;
 public class AccountService {
     
     private final AccountRepository accountRepository;
+    private final ClientClient clientClient;
+    private final EmailService emailService;
     private final Random random = new Random();
     
     @Transactional
@@ -36,6 +40,21 @@ public class AccountService {
         
         Account savedAccount = accountRepository.save(account);
         log.info("Account created successfully with number: {}", savedAccount.getAccountNumber());
+        
+        // Send email notification to the client
+        try {
+            ClientDTO client = clientClient.getClientById(savedAccount.getClientId());
+            emailService.sendAccountCreatedEmail(
+                client.getEmail(),
+                client.getFirstName(),
+                client.getLastName(),
+                savedAccount.getAccountNumber(),
+                savedAccount.getAccountType().toString()
+            );
+        } catch (Exception e) {
+            log.error("Failed to send account creation email: {}", e.getMessage());
+            // Don't fail the account creation if email fails
+        }
         
         return toDTO(savedAccount);
     }

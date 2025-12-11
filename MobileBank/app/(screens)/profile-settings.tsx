@@ -1,8 +1,9 @@
 import { useTheme } from '@/contexts/theme-context';
+import { useAuthContext } from '@/contexts/auth-context';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Pressable, 
   ScrollView, 
@@ -35,19 +36,20 @@ interface ClientProfile {
 export default function ProfileSettingsScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { client, refreshProfile } = useAuthContext();
   
-  // Données mockées basées sur l'entité Client
+  // Utiliser les vraies données du client connecté
   const [profile, setProfile] = useState<ClientProfile>({
-    id: 1,
-    firstName: 'Jean',
-    lastName: 'Dupont',
-    email: 'jean.dupont@email.com',
-    phone: '+33 6 12 34 56 78',
-    address: '123 Rue de la Paix, 75001 Paris',
-    cin: 'AB123456',
-    role: 'CLIENT',
-    status: 'ACTIVE',
-    createdAt: '2023-01-15',
+    id: client?.id || 1,
+    firstName: client?.firstName || 'Jean',
+    lastName: client?.lastName || 'Dupont',
+    email: client?.email || 'jean.dupont@email.com',
+    phone: client?.phone || '+33 6 12 34 56 78',
+    address: client?.address || '123 Rue de la Paix, 75001 Paris',
+    cin: client?.cin || 'AB123456',
+    role: client?.role || 'CLIENT',
+    status: client?.status || 'ACTIVE',
+    createdAt: client?.createdAt || '2023-01-15',
     lastLogin: '2024-12-09T10:30:00',
   });
 
@@ -60,6 +62,31 @@ export default function ProfileSettingsScreen() {
   const [email, setEmail] = useState(profile.email);
   const [phone, setPhone] = useState(profile.phone);
   const [address, setAddress] = useState(profile.address);
+
+  // Mettre à jour le profil quand les données client changent
+  useEffect(() => {
+    if (client) {
+      const updatedProfile = {
+        id: client.id,
+        firstName: client.firstName || 'Jean',
+        lastName: client.lastName || 'Dupont',
+        email: client.email || 'jean.dupont@email.com',
+        phone: client.phone || '+33 6 12 34 56 78',
+        address: client.address || '123 Rue de la Paix, 75001 Paris',
+        cin: client.cin || 'AB123456',
+        role: client.role || 'CLIENT',
+        status: client.status || 'ACTIVE',
+        createdAt: client.createdAt || '2023-01-15',
+        lastLogin: client.lastLogin || '2024-12-09T10:30:00',
+      };
+      setProfile(updatedProfile);
+      setFirstName(updatedProfile.firstName);
+      setLastName(updatedProfile.lastName);
+      setEmail(updatedProfile.email);
+      setPhone(updatedProfile.phone);
+      setAddress(updatedProfile.address);
+    }
+  }, [client]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -132,7 +159,7 @@ export default function ProfileSettingsScreen() {
     >
         {/* Premium Gradient Header */}
         <LinearGradient
-          colors={['#667EEA', '#764BA2']}
+          colors={['#667EEA', '#0066FF']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.headerGradient}
@@ -180,7 +207,7 @@ export default function ProfileSettingsScreen() {
                 {/* Avatar */}
                 <View style={styles.avatarContainer}>
                   <LinearGradient
-                    colors={['#667EEA', '#764BA2']}
+                    colors={['#667EEA', '#0066FF']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={styles.avatar}
@@ -232,7 +259,7 @@ export default function ProfileSettingsScreen() {
                   name="person"
                   size={40}
                   iconSize={20}
-                  colors={['#667EEA', '#764BA2']}
+                  colors={['#667EEA', '#0066FF']}
                   shape="rounded"
                 />
                 <Text style={[styles.cardTitle, { color: colors.text }]}>
