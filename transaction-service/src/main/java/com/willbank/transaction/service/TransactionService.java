@@ -1,6 +1,9 @@
 package com.willbank.transaction.service;
 
 import com.willbank.transaction.client.AccountClient;
+import com.willbank.transaction.client.ClientClient;
+import com.willbank.transaction.dto.AccountDTO;
+import com.willbank.transaction.dto.ClientDTO;
 import com.willbank.transaction.dto.TransactionDTO;
 import com.willbank.transaction.entity.Transaction;
 import com.willbank.transaction.event.AccountCreditedEvent;
@@ -25,6 +28,8 @@ public class TransactionService {
     
     private final TransactionRepository transactionRepository;
     private final AccountClient accountClient;
+    private final ClientClient clientClient;
+    private final EmailService emailService;
     private final EventPublisher eventPublisher;
     
     @Transactional
@@ -99,6 +104,25 @@ public class TransactionService {
             
             transaction.setStatus(Transaction.TransactionStatus.COMPLETED);
             Transaction savedTransaction = transactionRepository.save(transaction);
+            
+            // Send email notification to the client
+            try {
+                AccountDTO account = accountClient.getAccountById(savedTransaction.getSourceAccountId());
+                ClientDTO client = clientClient.getClientById(account.getClientId());
+                
+                emailService.sendTransactionNotificationEmail(
+                    client.getEmail(),
+                    client.getFirstName(),
+                    savedTransaction.getType().toString(),
+                    savedTransaction.getAmount(),
+                    account.getAccountNumber(),
+                    savedTransaction.getTransactionReference(),
+                    account.getBalance()
+                );
+            } catch (Exception e) {
+                log.error("Failed to send transaction notification email: {}", e.getMessage());
+                // Don't fail the transaction if email fails
+            }
             
             // Publish transaction created event
             try {

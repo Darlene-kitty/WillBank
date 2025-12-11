@@ -1,6 +1,8 @@
 package com.willbank.transaction.client;
 
+import com.willbank.transaction.dto.AccountDTO;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,4 +17,7 @@ public interface AccountClient {
     
     @PostMapping("/api/accounts/{id}/debit")
     void debit(@PathVariable("id") Long accountId, @RequestParam("amount") BigDecimal amount);
+    
+    @GetMapping("/api/accounts/{id}")
+    AccountDTO getAccountById(@PathVariable("id") Long accountId);
 }
